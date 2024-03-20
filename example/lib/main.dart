@@ -13,22 +13,60 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final auth = PasscodeBiometricAuthUICached(retryInSecond: 5);
+  final auth = PasscodeBiometricAuthUICached(
+    maxRetries: 5,
+    retryInSecond: 30,
+    onForgetPasscode: (context, authUI) async {
+      if (await _forgetPasscode(context)) {
+        return true;
+      }
+      return false;
+    },
+  );
+
+  static Future<bool> _forgetPasscode(BuildContext context) async {
+    final result = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Forget Passcode'),
+            content: const Text(
+              'All of your local data will be removed when reset the passcode. Would you like to continue?',
+              textAlign: TextAlign.justify,
+            ),
+            actions: [
+              OutlinedButton(
+                child: const Text('No'),
+                onPressed: () {
+                  Navigator.pop(ctx, false);
+                },
+              ),
+              ElevatedButton(
+                child: const Text('Yes'),
+                onPressed: () {
+                  Navigator.pop(ctx, true);
+                },
+              ),
+            ],
+          );
+        });
+
+    return result == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Example'),
       ),
-      body: Column(
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              auth.authenticate(context);
-            },
-            child: const Text('Lock'),
-          ),
-        ],
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            auth.authenticate(context);
+          },
+          child: const Text('Lock'),
+        ),
       ),
     );
   }

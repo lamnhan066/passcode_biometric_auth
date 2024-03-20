@@ -8,12 +8,14 @@ class RepeatPasscode extends StatefulWidget {
     required this.title,
     required this.content,
     required this.incorrectText,
+    required this.hapticFeedbackType,
   });
 
   final String passcode;
   final String title;
   final String content;
   final String incorrectText;
+  final HapticFeedbackType hapticFeedbackType;
 
   @override
   State<RepeatPasscode> createState() => _RepeatPasscodeState();
@@ -35,7 +37,9 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
         FocusScope.of(context).requestFocus(focus);
       });
       setState(() {
-        error = widget.incorrectText.replaceAll('@{counter}', '$_retryCounter');
+        error = widget.incorrectText
+            .replaceAll('@{counter}', '$_retryCounter')
+            .replaceAll('@{maxRetries}', '');
       });
     }
   }
@@ -52,35 +56,46 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(widget.content, style: const TextStyle(fontSize: 18)),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Pinput(
-              controller: textController,
-              focusNode: focus,
-              length: 6,
-              autofocus: true,
-              hapticFeedbackType: HapticFeedbackType.lightImpact,
-              obscureText: true,
-              onCompleted: onCompleted,
-              onChanged: onChanged,
-            ),
-          ),
-          if (error != null) ...[
+      content: AnimatedSize(
+        duration: const Duration(milliseconds: 100),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(widget.content, style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
-            Text(
-              error!,
-              style: const TextStyle(color: Colors.red),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Pinput(
+                controller: textController,
+                focusNode: focus,
+                length: 6,
+                autofocus: true,
+                hapticFeedbackType: HapticFeedbackType.lightImpact,
+                obscureText: true,
+                onCompleted: onCompleted,
+                onChanged: onChanged,
+              ),
             ),
-          ]
-        ],
+            if (error != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                error!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ],
+          ],
+        ),
       ),
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }

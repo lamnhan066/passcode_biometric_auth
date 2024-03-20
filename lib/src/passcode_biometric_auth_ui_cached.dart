@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/on_read.dart';
@@ -23,11 +20,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.useBiometricChecboxText,
     super.maxRetriesExceeededText,
     super.onMaxRetriesExceeded,
-    Future<bool> Function(
-            BuildContext context, PasscodeBiometricAuthUI localAuth)?
-        onForgetPasscode,
-    Future<void> Function(String sha256Code, PasscodeBiometricAuthUI localAuth)?
-        onCreatePasscode,
+    super.onForgetPasscode,
     OnRead? onRead,
     OnWrite? onWrite,
   }) : super(sha256Passcode: '') {
@@ -57,10 +50,5 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
             await pref.setInt('$prefix.$key', value);
           },
         );
-  }
-
-  @override
-  FutureOr<bool> isAvailablePasscode() async {
-    return await sha256Passcode != '';
   }
 }

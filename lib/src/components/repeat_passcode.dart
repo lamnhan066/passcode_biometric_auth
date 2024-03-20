@@ -9,12 +9,14 @@ class RepeatPasscode extends StatefulWidget {
     required this.content,
     required this.incorrectText,
     required this.hapticFeedbackType,
+    required this.backButtonText,
   });
 
   final String passcode;
   final String title;
   final String content;
   final String incorrectText;
+  final String? backButtonText;
   final HapticFeedbackType hapticFeedbackType;
 
   @override
@@ -82,20 +84,22 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
               const SizedBox(height: 8),
               Text(
                 error!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             ],
           ],
         ),
       ),
-      actions: [
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
-        ),
-      ],
+      actions: widget.backButtonText == null
+          ? null
+          : [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(widget.backButtonText!),
+              ),
+            ],
     );
   }
 }

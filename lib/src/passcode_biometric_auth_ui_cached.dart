@@ -21,6 +21,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.maxRetriesExceeededText,
     super.onMaxRetriesExceeded,
     super.onForgetPasscode,
+    super.blurSigma,
     OnRead? onRead,
     OnWrite? onWrite,
   }) : super(sha256Passcode: '') {

@@ -15,6 +15,8 @@ class CreatePasscode extends StatelessWidget {
     required this.repeatContent,
     required this.incorrectText,
     required this.hapticFeedbackType,
+    required this.cancelButtonText,
+    required this.repeatBackButtonText,
   });
 
   final String title;
@@ -22,6 +24,8 @@ class CreatePasscode extends StatelessWidget {
   final String? subContent;
   final String repeatContent;
   final String incorrectText;
+  final String? cancelButtonText;
+  final String? repeatBackButtonText;
   final HapticFeedbackType hapticFeedbackType;
 
   @override
@@ -53,6 +57,7 @@ class CreatePasscode extends StatelessWidget {
                       content: repeatContent,
                       incorrectText: incorrectText,
                       hapticFeedbackType: hapticFeedbackType,
+                      backButtonText: repeatBackButtonText,
                     ),
                   );
 
@@ -69,20 +74,23 @@ class CreatePasscode extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   subContent!,
+                  style: const TextStyle(fontSize: 13),
                   textAlign: TextAlign.justify,
                 ),
               ),
           ],
         ),
       ),
-      actions: [
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
-        ),
-      ],
+      actions: cancelButtonText == null
+          ? null
+          : [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(cancelButtonText!),
+              ),
+            ],
     );
   }
 }

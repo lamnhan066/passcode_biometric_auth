@@ -23,12 +23,15 @@ class PasscodeBiometricAuthUI {
   String title;
   String checkContent;
   String checkIncorrectText;
+  String? checkCancelButtonText;
   String createContent;
   String? createSubContent;
+  String? createCancelButtonText;
   String forgetText;
   String maxRetriesExceeededText;
   String repeatContent;
   String repeatIncorrectText;
+  String? repeatBackButtonText;
   String? useBiometricChecboxText;
   double blurSigma;
   Future<bool> Function(BuildContext context)? onForgetPasscode;
@@ -56,17 +59,19 @@ class PasscodeBiometricAuthUI {
     this.retryInSecond = 300,
     String sha256Passcode = '',
     bool isUseBiometric = false,
-    this.forceCreatePasscode = false,
+    this.forceCreatePasscode = true,
     this.title = 'Passcode',
     this.checkContent = 'Input your passcode',
     this.checkIncorrectText =
         'This passcode is not correct (max: @{counter}/@{maxRetries} times)',
     this.createContent = 'Create your passcode',
     this.createSubContent,
+    this.createCancelButtonText,
     this.forgetText = 'Forgot your passcode?',
     this.repeatContent = 'Repeat your passcode',
     this.repeatIncorrectText =
         'This passcode is not correct (number: @{counter})',
+    this.repeatBackButtonText,
     this.useBiometricChecboxText = 'Use biometric authentication',
     this.maxRetriesExceeededText =
         'Maximum retries are exceeded, please try again in @{second}s',
@@ -167,6 +172,7 @@ class PasscodeBiometricAuthUI {
           content: checkContent,
           forgetText: forgetText,
           incorrectText: checkIncorrectText,
+          cancelButtonText: checkCancelButtonText,
           useBiometricChecboxText: useBiometricChecboxText,
           maxRetriesExceededText: maxRetriesExceeededText,
           onForgetPasscode: onForgetPasscode == null
@@ -206,7 +212,6 @@ class PasscodeBiometricAuthUI {
 
   @mustCallSuper
   Future<void> removePasscode() async {
-    print('OK');
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
     await onWrite?.writeInt(PrefKeys.lastRetriesExceededSecond, 0);
@@ -229,7 +234,9 @@ class PasscodeBiometricAuthUI {
           title: title,
           content: createContent,
           subContent: createSubContent,
+          cancelButtonText: createCancelButtonText,
           repeatContent: repeatContent,
+          repeatBackButtonText: repeatBackButtonText,
           incorrectText: repeatIncorrectText,
           hapticFeedbackType: hapticFeedbackType,
         ),

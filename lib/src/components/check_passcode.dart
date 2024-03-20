@@ -24,6 +24,7 @@ class CheckPasscode extends StatefulWidget {
     required this.maxRetriesExceededText,
     required this.onForgetPasscode,
     required this.onMaxRetriesExceeded,
+    required this.cancelButtonText,
     required this.onRead,
     required this.onWrite,
     required this.hapticFeedbackType,
@@ -39,6 +40,7 @@ class CheckPasscode extends StatefulWidget {
   final String incorrectText;
   final String maxRetriesExceededText;
   final String? useBiometricChecboxText;
+  final String? cancelButtonText;
   final Future<void> Function()? onForgetPasscode;
   final void Function()? onMaxRetriesExceeded;
   final OnRead? onRead;
@@ -177,7 +179,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
               const SizedBox(height: 8),
               Text(
                 error!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             ],
             if (widget.onForgetPasscode != null)
@@ -243,6 +245,16 @@ class _CheckPasscodeState extends State<CheckPasscode> {
           ],
         ),
       ),
+      actions: widget.cancelButtonText == null
+          ? null
+          : [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(widget.cancelButtonText!),
+              ),
+            ],
     );
   }
 }

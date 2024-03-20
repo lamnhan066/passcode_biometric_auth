@@ -108,7 +108,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
           _retryCounter = 0;
           error = null;
         });
-        Future.delayed(const Duration(milliseconds: 100)).then((value) {
+        Future.delayed(const Duration(milliseconds: 500)).then((value) {
           FocusScope.of(context).requestFocus(focusNode);
         });
         timer.cancel();

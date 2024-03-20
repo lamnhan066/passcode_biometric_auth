@@ -35,7 +35,7 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
     } else {
       _retryCounter++;
       textController.clear();
-      Future.delayed(const Duration(milliseconds: 100)).then((value) {
+      Future.delayed(const Duration(milliseconds: 500)).then((value) {
         FocusScope.of(context).requestFocus(focus);
       });
       setState(() {

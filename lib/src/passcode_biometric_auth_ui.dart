@@ -21,12 +21,12 @@ class PasscodeBiometricAuthUI {
   int retryInSecond;
   bool forceCreatePasscode;
   String title;
-  String inputContent;
+  String checkContent;
+  String checkIncorrectText;
   String createContent;
   String? createSubContent;
   String forgetText;
   String maxRetriesExceeededText;
-  String incorrectText;
   String repeatContent;
   String repeatIncorrectText;
   String? useBiometricChecboxText;
@@ -58,12 +58,12 @@ class PasscodeBiometricAuthUI {
     bool isUseBiometric = false,
     this.forceCreatePasscode = false,
     this.title = 'Passcode',
-    this.inputContent = 'Input your passcode',
+    this.checkContent = 'Input your passcode',
+    this.checkIncorrectText =
+        'This passcode is not correct (max: @{counter}/@{maxRetries} times)',
     this.createContent = 'Create your passcode',
     this.createSubContent,
     this.forgetText = 'Forgot your passcode?',
-    this.incorrectText =
-        'This passcode is not correct (max: @{counter}/@{maxRetries} times)',
     this.repeatContent = 'Repeat your passcode',
     this.repeatIncorrectText =
         'This passcode is not correct (number: @{counter})',
@@ -164,9 +164,9 @@ class PasscodeBiometricAuthUI {
           retryInSecond: retryInSecond,
           sha256Passcode: code,
           title: title,
-          content: inputContent,
+          content: checkContent,
           forgetText: forgetText,
-          incorrectText: incorrectText,
+          incorrectText: checkIncorrectText,
           useBiometricChecboxText: useBiometricChecboxText,
           maxRetriesExceededText: maxRetriesExceeededText,
           onForgetPasscode: onForgetPasscode == null

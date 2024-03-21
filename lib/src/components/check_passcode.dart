@@ -116,11 +116,13 @@ class _CheckPasscodeState extends State<CheckPasscode> {
           FocusScope.of(context).requestFocus(focusNode);
         });
         timer.cancel();
-        widget.onWrite?.writeInt(PrefKeys.lastRetriesExceededSecond, 0);
+        widget.onWrite
+            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
         return;
       }
       if (second % 1000 == 0) {
-        widget.onWrite?.writeInt(PrefKeys.lastRetriesExceededSecond, second);
+        widget.onWrite
+            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, second);
       }
       setState(() {
         error = widget.maxRetriesExceededText
@@ -130,8 +132,8 @@ class _CheckPasscodeState extends State<CheckPasscode> {
   }
 
   void init() async {
-    final second =
-        await widget.onRead?.readInt(PrefKeys.lastRetriesExceededSecond);
+    final second = await widget.onRead
+        ?.readInt(PrefKeys.lastRetriesExceededRemainingSecond);
     if (second != null && second > 0) {
       maxRetriesExceededCounter(second);
     } else {

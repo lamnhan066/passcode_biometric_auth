@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-class CheckPasscodeState extends Equatable {
+class CheckPasscodeState {
   final bool isAuthenticated;
   final bool isUseBiometric;
 
@@ -8,7 +6,4 @@ class CheckPasscodeState extends Equatable {
     required this.isAuthenticated,
     required this.isUseBiometric,
   });
-
-  @override
-  List<Object?> get props => [isAuthenticated, isUseBiometric];
 }

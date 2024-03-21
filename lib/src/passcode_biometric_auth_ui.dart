@@ -219,7 +219,7 @@ class PasscodeBiometricAuthUI {
   Future<void> removePasscode() async {
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
-    await onWrite?.writeInt(PrefKeys.lastRetriesExceededSecond, 0);
+    await onWrite?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
     _sha256Passcode = '';
   }
 

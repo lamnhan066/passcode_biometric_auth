@@ -64,6 +64,7 @@ class PasscodeBiometricAuthUI {
     this.checkContent = 'Input your passcode',
     this.checkIncorrectText =
         'This passcode is not correct (max: @{counter}/@{maxRetries} times)',
+    this.checkCancelButtonText,
     this.createContent = 'Create your passcode',
     this.createSubContent,
     this.createCancelButtonText,

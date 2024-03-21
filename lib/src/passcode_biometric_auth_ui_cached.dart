@@ -27,6 +27,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.onForgetPasscode,
     super.blurSigma,
     super.hapticFeedbackType,
+    super.dialogBuilder,
     OnRead? onRead,
     OnWrite? onWrite,
   }) : super(sha256Passcode: '') {

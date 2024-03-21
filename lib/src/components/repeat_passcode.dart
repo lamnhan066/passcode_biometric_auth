@@ -10,6 +10,7 @@ class RepeatPasscode extends StatefulWidget {
     required this.incorrectText,
     required this.hapticFeedbackType,
     required this.backButtonText,
+    required this.dialogBuilder,
   });
 
   final String passcode;
@@ -18,6 +19,8 @@ class RepeatPasscode extends StatefulWidget {
   final String incorrectText;
   final String? backButtonText;
   final HapticFeedbackType hapticFeedbackType;
+  final Widget Function(BuildContext context, String title, Widget content,
+      List<Widget>? buttons)? dialogBuilder;
 
   @override
   State<RepeatPasscode> createState() => _RepeatPasscodeState();
@@ -47,59 +50,68 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
   }
 
   void onChanged(code) {
-    if (error != null && code.length < 6) {
-      setState(() {
-        error = null;
-      });
-    }
+    // if (error != null && code.length < 6) {
+    //   setState(() {
+    //     error = null;
+    //   });
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: AnimatedSize(
-        duration: const Duration(milliseconds: 100),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(widget.content, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Pinput(
-                controller: textController,
-                focusNode: focus,
-                length: 6,
-                autofocus: true,
-                hapticFeedbackType: HapticFeedbackType.lightImpact,
-                obscureText: true,
-                onCompleted: onCompleted,
-                onChanged: onChanged,
-              ),
+    final title = widget.title;
+    final content = AnimatedSize(
+      duration: const Duration(milliseconds: 100),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(widget.content, style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Pinput(
+              controller: textController,
+              focusNode: focus,
+              length: 6,
+              autofocus: true,
+              hapticFeedbackType: HapticFeedbackType.lightImpact,
+              obscureText: true,
+              onCompleted: onCompleted,
+              onChanged: onChanged,
             ),
-            if (error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                error!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ],
+          ),
+          if (error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              error!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
           ],
-        ),
+        ],
       ),
-      actions: widget.backButtonText == null
-          ? null
-          : [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(widget.backButtonText!),
-              ),
-            ],
     );
+    final buttons = widget.backButtonText == null
+        ? null
+        : [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(widget.backButtonText!),
+            ),
+          ];
+    Widget child;
+    if (widget.dialogBuilder != null) {
+      child = widget.dialogBuilder!(context, title, content, buttons);
+    } else {
+      child = AlertDialog(
+        title: Text(title),
+        content: content,
+        actions: buttons,
+      );
+    }
+    return child;
   }
 }

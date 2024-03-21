@@ -28,6 +28,7 @@ class CheckPasscode extends StatefulWidget {
     required this.onRead,
     required this.onWrite,
     required this.hapticFeedbackType,
+    required this.dialogBuilder,
   });
 
   final int maxRetries;
@@ -46,6 +47,8 @@ class CheckPasscode extends StatefulWidget {
   final OnRead? onRead;
   final OnWrite? onWrite;
   final HapticFeedbackType hapticFeedbackType;
+  final Widget Function(BuildContext context, String title, Widget content,
+      List<Widget>? actions)? dialogBuilder;
 
   @override
   State<CheckPasscode> createState() => _CheckPasscodeState();
@@ -87,11 +90,11 @@ class _CheckPasscodeState extends State<CheckPasscode> {
   }
 
   void onChanged(String code) {
-    if (error != null && code.length < 6) {
-      setState(() {
-        error = null;
-      });
-    }
+    // if (error != null && code.length < 6) {
+    //   setState(() {
+    //     error = null;
+    //   });
+    // }
   }
 
   void maxRetriesExceededCounter(int retryInSecond) {
@@ -149,112 +152,121 @@ class _CheckPasscodeState extends State<CheckPasscode> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: AnimatedSize(
-        alignment: Alignment.topCenter,
-        duration: const Duration(milliseconds: 100),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(widget.content, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Pinput(
-                controller: textController,
-                focusNode: focusNode,
-                enabled: _retryCounter < widget.maxRetries,
-                length: 6,
-                autofocus: true,
-                hapticFeedbackType: widget.hapticFeedbackType,
-                obscureText: true,
-                onCompleted: onCompleted,
-                onChanged: onChanged,
-              ),
+    final title = widget.title;
+    final content = AnimatedSize(
+      alignment: Alignment.topCenter,
+      duration: const Duration(milliseconds: 100),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(widget.content, style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Pinput(
+              controller: textController,
+              focusNode: focusNode,
+              enabled: _retryCounter < widget.maxRetries,
+              length: 6,
+              autofocus: true,
+              hapticFeedbackType: widget.hapticFeedbackType,
+              obscureText: true,
+              onCompleted: onCompleted,
+              onChanged: onChanged,
             ),
-            if (error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                error!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ],
-            if (widget.onForgetPasscode != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    widget.onForgetPasscode!();
-                  },
-                  child: Text(
-                    widget.forgetText,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
+          ),
+          if (error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              error!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ],
+          if (widget.onForgetPasscode != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  widget.onForgetPasscode!();
+                },
+                child: Text(
+                  widget.forgetText,
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
-            if (widget.useBiometricChecboxText != null)
-              FutureBuilder(
-                future: widget.localAuth.isBiometricAvailable(),
-                builder: (ctx, snapshot) {
-                  if (!snapshot.hasData || snapshot.data != true) {
-                    return const SizedBox.shrink();
-                  }
-                  return FutureBuilder<bool>(
-                      future: Future.value(widget.localAuth.isUseBiometric),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox.shrink();
-                        }
+            ),
+          if (widget.useBiometricChecboxText != null)
+            FutureBuilder(
+              future: widget.localAuth.isBiometricAvailable(),
+              builder: (ctx, snapshot) {
+                if (!snapshot.hasData || snapshot.data != true) {
+                  return const SizedBox.shrink();
+                }
+                return FutureBuilder<bool>(
+                    future: Future.value(widget.localAuth.isUseBiometric),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox.shrink();
+                      }
 
-                        if (snapshot.hasData && isBiometricChecked == null) {
-                          isBiometricChecked = snapshot.data!;
-                        }
+                      if (snapshot.hasData && isBiometricChecked == null) {
+                        isBiometricChecked = snapshot.data!;
+                      }
 
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Checkbox(
-                              value: isBiometricChecked,
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  if (value == true) {
-                                    if (await widget.localAuth
-                                            .isBiometricAuthenticated() ==
-                                        true) {
-                                      setState(() {
-                                        isBiometricChecked = true;
-                                      });
-                                    }
-                                  } else {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Checkbox(
+                            value: isBiometricChecked,
+                            onChanged: (value) async {
+                              if (value != null) {
+                                if (value == true) {
+                                  if (await widget.localAuth
+                                          .isBiometricAuthenticated() ==
+                                      true) {
                                     setState(() {
-                                      isBiometricChecked = false;
+                                      isBiometricChecked = true;
                                     });
                                   }
+                                } else {
+                                  setState(() {
+                                    isBiometricChecked = false;
+                                  });
                                 }
-                              },
-                            ),
-                            Text(widget.useBiometricChecboxText!),
-                          ],
-                        );
-                      });
-                },
-              ),
-          ],
-        ),
+                              }
+                            },
+                          ),
+                          Text(widget.useBiometricChecboxText!),
+                        ],
+                      );
+                    });
+              },
+            ),
+        ],
       ),
-      actions: widget.cancelButtonText == null
-          ? null
-          : [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(widget.cancelButtonText!),
-              ),
-            ],
     );
+    final actions = widget.cancelButtonText == null
+        ? null
+        : [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(widget.cancelButtonText!),
+            ),
+          ];
+    Widget child;
+    if (widget.dialogBuilder != null) {
+      child = widget.dialogBuilder!(context, title, content, actions);
+    } else {
+      child = AlertDialog(
+        title: Text(widget.title),
+        content: content,
+        actions: actions,
+      );
+    }
+    return child;
   }
 }

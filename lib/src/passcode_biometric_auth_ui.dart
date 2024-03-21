@@ -39,6 +39,8 @@ class PasscodeBiometricAuthUI {
   OnRead? onRead;
   OnWrite? onWrite;
   HapticFeedbackType hapticFeedbackType;
+  Widget Function(BuildContext context, String title, Widget content,
+      List<Widget>? actions)? dialogBuilder;
 
   bool? _isBiometricAvailableCached;
   late bool _isUseBiometric;
@@ -63,7 +65,7 @@ class PasscodeBiometricAuthUI {
     this.title = 'Passcode',
     this.checkContent = 'Input your passcode',
     this.checkIncorrectText =
-        'This passcode is not correct (max: @{counter}/@{maxRetries} times)',
+        'This passcode is incorrect (max: @{counter}/@{maxRetries} times)',
     this.checkCancelButtonText,
     this.createContent = 'Create your passcode',
     this.createSubContent,
@@ -71,7 +73,7 @@ class PasscodeBiometricAuthUI {
     this.forgetText = 'Forgot your passcode?',
     this.repeatContent = 'Repeat your passcode',
     this.repeatIncorrectText =
-        'This passcode is not correct (number: @{counter})',
+        'This passcode is incorrect (number: @{counter})',
     this.repeatBackButtonText,
     this.useBiometricChecboxText = 'Use biometric authentication',
     this.maxRetriesExceeededText =
@@ -83,6 +85,7 @@ class PasscodeBiometricAuthUI {
     this.onRead,
     this.onWrite,
     this.hapticFeedbackType = HapticFeedbackType.lightImpact,
+    this.dialogBuilder,
   }) {
     _isUseBiometric = isUseBiometric;
     _sha256Passcode = sha256Passcode;
@@ -186,6 +189,7 @@ class PasscodeBiometricAuthUI {
           onRead: onRead,
           onWrite: onWrite,
           hapticFeedbackType: hapticFeedbackType,
+          dialogBuilder: dialogBuilder,
         ),
       ),
     );
@@ -240,6 +244,7 @@ class PasscodeBiometricAuthUI {
           repeatBackButtonText: repeatBackButtonText,
           incorrectText: repeatIncorrectText,
           hapticFeedbackType: hapticFeedbackType,
+          dialogBuilder: dialogBuilder,
         ),
       ),
     );

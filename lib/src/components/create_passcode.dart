@@ -17,6 +17,7 @@ class CreatePasscode extends StatelessWidget {
     required this.hapticFeedbackType,
     required this.cancelButtonText,
     required this.repeatBackButtonText,
+    required this.dialogBuilder,
   });
 
   final String title;
@@ -27,70 +28,81 @@ class CreatePasscode extends StatelessWidget {
   final String? cancelButtonText;
   final String? repeatBackButtonText;
   final HapticFeedbackType hapticFeedbackType;
+  final Widget Function(BuildContext context, String title, Widget content,
+      List<Widget>? buttons)? dialogBuilder;
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(title),
-      content: AnimatedSize(
-        duration: const Duration(milliseconds: 100),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(content, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Pinput(
-                length: 6,
-                autofocus: true,
-                hapticFeedbackType: hapticFeedbackType,
-                obscureText: true,
-                onCompleted: (code) async {
-                  final c = await showDialog<bool>(
-                    context: context,
-                    builder: (_) => RepeatPasscode(
-                      passcode: code,
-                      title: title,
-                      content: repeatContent,
-                      incorrectText: incorrectText,
-                      hapticFeedbackType: hapticFeedbackType,
-                      backButtonText: repeatBackButtonText,
-                    ),
-                  );
+    final widgetContent = AnimatedSize(
+      duration: const Duration(milliseconds: 100),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(content, style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Pinput(
+              length: 6,
+              autofocus: true,
+              hapticFeedbackType: hapticFeedbackType,
+              obscureText: true,
+              onCompleted: (code) async {
+                final c = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => RepeatPasscode(
+                    passcode: code,
+                    title: title,
+                    content: repeatContent,
+                    incorrectText: incorrectText,
+                    hapticFeedbackType: hapticFeedbackType,
+                    backButtonText: repeatBackButtonText,
+                    dialogBuilder: dialogBuilder,
+                  ),
+                );
 
-                  if (c == true && context.mounted) {
-                    final passcodeSHA256 =
-                        base64Encode(sha256.convert(utf8.encode(code)).bytes);
-                    Navigator.pop(context, passcodeSHA256);
-                  }
-                },
+                if (c == true && context.mounted) {
+                  final passcodeSHA256 =
+                      base64Encode(sha256.convert(utf8.encode(code)).bytes);
+                  Navigator.pop(context, passcodeSHA256);
+                }
+              },
+            ),
+          ),
+          if (subContent != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                subContent!,
+                style: const TextStyle(fontSize: 13),
+                textAlign: TextAlign.justify,
               ),
             ),
-            if (subContent != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  subContent!,
-                  style: const TextStyle(fontSize: 13),
-                  textAlign: TextAlign.justify,
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
-      actions: cancelButtonText == null
-          ? null
-          : [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text(cancelButtonText!),
-              ),
-            ],
     );
+    final buttons = cancelButtonText == null
+        ? null
+        : [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(cancelButtonText!),
+            ),
+          ];
+    Widget child;
+    if (dialogBuilder != null) {
+      child = dialogBuilder!(context, title, widgetContent, buttons);
+    } else {
+      child = AlertDialog(
+        title: Text(title),
+        content: widgetContent,
+        actions: buttons,
+      );
+    }
+    return child;
   }
 }

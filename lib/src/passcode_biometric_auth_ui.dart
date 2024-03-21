@@ -33,6 +33,7 @@ class PasscodeBiometricAuthUI {
   String repeatIncorrectText;
   String? repeatBackButtonText;
   String? useBiometricChecboxText;
+  String biometricReason;
   double blurSigma;
   Future<bool> Function(BuildContext context)? onForgetPasscode;
   void Function()? onMaxRetriesExceeded;
@@ -78,6 +79,7 @@ class PasscodeBiometricAuthUI {
     this.useBiometricChecboxText = 'Use biometric authentication',
     this.maxRetriesExceeededText =
         'Maximum retries are exceeded\nPlease try again in @{second}s',
+    this.biometricReason = 'Please authenticate to use this feature',
     this.blurSigma = 10,
     this.onMaxRetriesExceeded,
     Future<bool> Function(BuildContext context, PasscodeBiometricAuthUI authUI)?
@@ -154,7 +156,7 @@ class PasscodeBiometricAuthUI {
 
     var localAuth = LocalAuthentication();
     return await localAuth.authenticate(
-      localizedReason: 'Please authenticate to use this feature',
+      localizedReason: biometricReason,
     );
   }
 

@@ -22,6 +22,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.repeatIncorrectText,
     super.repeatBackButtonText,
     super.useBiometricChecboxText,
+    super.biometricReason,
     super.maxRetriesExceeededText,
     super.onMaxRetriesExceeded,
     super.onForgetPasscode,

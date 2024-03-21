@@ -46,14 +46,16 @@ class PasscodeBiometricAuth {
 
   /// `true`: authenticated
   /// `false`: not authenticated or not available
-  Future<bool> isBiometricAuthenticated() async {
+  Future<bool> isBiometricAuthenticated({
+    String biometricReason = 'Please authenticate to use this feature',
+  }) async {
     if (!await isBiometricAvailable()) {
       return false;
     }
 
     var localAuth = LocalAuthentication();
     return await localAuth.authenticate(
-      localizedReason: 'Please authenticate to use this feature',
+      localizedReason: biometricReason,
     );
   }
 

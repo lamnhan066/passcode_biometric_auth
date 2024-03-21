@@ -64,6 +64,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
 
   void onCompleted(String code) async {
     if (await widget.localAuth.isPasscodeAuthenticated(code) && mounted) {
+      focusNode.unfocus();
       Navigator.pop(
         context,
         CheckPasscodeState(
@@ -133,6 +134,8 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         await widget.onRead?.readInt(PrefKeys.lastRetriesExceededSecond);
     if (second != null && second > 0) {
       maxRetriesExceededCounter(second);
+    } else {
+      focusNode.requestFocus();
     }
   }
 
@@ -170,9 +173,9 @@ class _CheckPasscodeState extends State<CheckPasscode> {
               focusNode: focusNode,
               enabled: _retryCounter < widget.maxRetries,
               length: 6,
-              autofocus: true,
               hapticFeedbackType: widget.hapticFeedbackType,
               obscureText: true,
+              closeKeyboardWhenCompleted: false,
               onCompleted: onCompleted,
               onChanged: onChanged,
             ),
@@ -181,6 +184,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
             const SizedBox(height: 8),
             Text(
               error!,
+              textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ],

@@ -28,18 +28,19 @@ class RepeatPasscode extends StatefulWidget {
 
 class _RepeatPasscodeState extends State<RepeatPasscode> {
   final textController = TextEditingController();
-  final focus = FocusNode();
+  final focusNode = FocusNode();
   String? error;
   int _retryCounter = 0;
 
   void onCompleted(code) {
     if (code == widget.passcode) {
+      focusNode.unfocus();
       Navigator.pop(context, true);
     } else {
       _retryCounter++;
       textController.clear();
       Future.delayed(const Duration(milliseconds: 500)).then((value) {
-        FocusScope.of(context).requestFocus(focus);
+        FocusScope.of(context).requestFocus(focusNode);
       });
       setState(() {
         error = widget.incorrectText
@@ -61,6 +62,7 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
   Widget build(BuildContext context) {
     final title = widget.title;
     final content = AnimatedSize(
+      alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -73,11 +75,12 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
             padding: const EdgeInsets.all(8.0),
             child: Pinput(
               controller: textController,
-              focusNode: focus,
-              length: 6,
+              focusNode: focusNode,
               autofocus: true,
+              length: 6,
               hapticFeedbackType: HapticFeedbackType.lightImpact,
               obscureText: true,
+              closeKeyboardWhenCompleted: false,
               onCompleted: onCompleted,
               onChanged: onChanged,
             ),
@@ -86,6 +89,7 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
             const SizedBox(height: 8),
             Text(
               error!,
+              textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ],

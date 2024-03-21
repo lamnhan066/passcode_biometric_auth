@@ -34,6 +34,7 @@ class CreatePasscode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final widgetContent = AnimatedSize(
+      alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -49,6 +50,7 @@ class CreatePasscode extends StatelessWidget {
               autofocus: true,
               hapticFeedbackType: hapticFeedbackType,
               obscureText: true,
+              closeKeyboardWhenCompleted: false,
               onCompleted: (code) async {
                 final c = await showDialog<bool>(
                   context: context,

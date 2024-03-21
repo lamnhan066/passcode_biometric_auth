@@ -1,51 +1,64 @@
-# passcode_biometric_auth
+# Passcode Biometric Authe
 
-A new Flutter plugin project.
+A Flutter package that combines both passcode and biometric effectively.
 
-## Getting Started
+## Usage
 
 ```dart
-
-final localAuth = PasscodeBiometricAuthAuto(
-  isUseBiometricKey: 'IsUseBiometric',
-  sha256PasscodeKey: 'Sha256Passcode',
+final passcodeBiometric = PasscodeBiometricAuthUICached(
   forceCreatePasscode: true,
-  title: 'Passcode',
-  inputContent: 'Input your passcode',
-  createContent: 'Create your passcode',
+  title: 'Passcode'.tr,
+  checkContent: 'Input Passcode'.tr,
+  checkIncorrectText:ß
+      'This passcode is incorrect (max: @{counter}/@{maxRetries} times)'.tr,
+  checkCancelButtonText: 'Cancel'.tr,
+  createContent: 'Create Passcode'.tr,
   createSubContent: 'Please remember your passcode. '
-      'When you forget your passcode, you can reset it but '
-      'all your cards will be removed from your local storage '
-      'and your Google account will be signed out.',
-  forgetText: 'Forgot your passcode?',
-  incorrectText: 'This passcode is not correct',
-  repeatContent: 'Repeat your passcode',
-  useBiometricChecboxText: 'Use biometric authentication',
+          'When you forget your passcode, you can reset it but '
+          'all your cards will be removed from your local storage '
+          'and your Google account will be signed out.'
+      .tr,
+  forgetText: 'Forgot your passcode?'.tr,
+  repeatIncorrectText: 'This passcode is not correct'.tr,
+  repeatContent: 'Repeat Passcode'.tr,
+  useBiometricChecboxText: 'Use biometric authentication'.tr,
+  maxRetriesExceeededText:
+      'Maximum retries are exceeded\nPlease try again in @{second}s'.tr,
   onForgetPasscode: (context, localAuth) async {
-    final isForget = await _forgetPassword(context,
-        title: 'Reset your Passcode',
-        content: 'Do you want to reset your passcode?');
+    final isAllowed = await _forgetPassword(context);
 
-    if (isForget) {
+    if (isAllowed) {
+      await Future.wait([
+        googleSignInController.googleSignOut(),
+        pageHomeController.removeAllCards(),
+        localAuth.useBiometric(false),
+      ]);
       return true;
     }
 
     return false;
   },
+  // Optional, default is `AlertDialog`.
+  dialogBuilder: (context, title, content, actions) {
+    return AlertDialog(
+      title: title,
+      content: content,
+      actions: actions,
+    );
+  },
 );
 
-Future<bool> _forgetPassword(
-  BuildContext context, {
-  String title = 'Reset your Passcode',
-  required String content,
-  String yesText = 'Yes',
-  String noText = 'No',
-}) async {
+Future<bool> _forgetPassword(BuildContext context) async {
   final result = await boxWDialog<bool>(
+    backgroundColor: generalController.backgroundColor,
     context: context,
-    title: title,
+    title: 'Reset Passcode'.tr,
     content: Text(
-      content,
+      'When your passcode is reset, all your cards will be '
+              'removed from your local storage and your Google account '
+              'will be signed out.\n\n'
+              'Do you want to continue?'
+          .tr,
       textAlign: TextAlign.justify,
     ),
     buttons: (ctx) => [
@@ -53,13 +66,15 @@ Future<bool> _forgetPassword(
         axis: Axis.horizontal,
         buttons: [
           BoxWButton(
-            child: Text(noText),
+            backgroundColor: generalController.appBarColor,
+            child: Text('No'.tr),
             onPressed: () {
               Navigator.pop(ctx, false);
             },
           ),
-          BoxWOutlinedButton(
-            child: Text(yesText),
+          BoxWButton(
+            backgroundColor: generalController.buttonRiskyColor,
+            child: Text('Yes'.tr),
             onPressed: () {
               Navigator.pop(ctx, true);
             },

@@ -61,11 +61,23 @@ class _AppState extends State<App> {
         title: const Text('Example'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            auth.authenticate(context);
-          },
-          child: const Text('Lock'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                auth.authenticate(context);
+              },
+              child: const Text('Lock'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                auth.changePasscode(context);
+              },
+              child: const Text('Change Passcode'),
+            ),
+          ],
         ),
       ),
     );

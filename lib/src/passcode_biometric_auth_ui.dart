@@ -18,30 +18,30 @@ import 'utils/pref_keys.dart';
 
 class PasscodeBiometricAuthUI {
   final String prefix;
-  int maxRetries;
-  int retryInSecond;
-  bool forceCreatePasscode;
-  String title;
-  String checkContent;
-  String checkIncorrectText;
-  String? checkCancelButtonText;
-  String createContent;
-  String? createSubContent;
-  String? createCancelButtonText;
-  String forgetText;
-  String maxRetriesExceeededText;
-  String repeatContent;
-  String repeatIncorrectText;
-  String? repeatBackButtonText;
-  String? useBiometricChecboxText;
-  String biometricReason;
-  double blurSigma;
-  Future<bool> Function(BuildContext context)? onForgetPasscode;
-  void Function()? onMaxRetriesExceeded;
-  OnRead? onRead;
-  OnWrite? onWrite;
-  HapticFeedbackType hapticFeedbackType;
-  Widget Function(BuildContext context, String title, Widget content,
+  final int maxRetries;
+  final int retryInSecond;
+  final bool forceCreatePasscode;
+  final String title;
+  final String checkContent;
+  final String checkIncorrectText;
+  final String? checkCancelButtonText;
+  final String createContent;
+  final String? createSubContent;
+  final String? createCancelButtonText;
+  final String forgetText;
+  final String maxRetriesExceeededText;
+  final String repeatContent;
+  final String repeatIncorrectText;
+  final String? repeatBackButtonText;
+  final String? useBiometricChecboxText;
+  final String biometricReason;
+  final double blurSigma;
+  late final Future<bool> Function(BuildContext context)? onForgetPasscode;
+  final void Function()? onMaxRetriesExceeded;
+  final OnRead? onRead;
+  final OnWrite? onWrite;
+  final HapticFeedbackType hapticFeedbackType;
+  final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
   bool? _isBiometricAvailableCached;
@@ -57,6 +57,7 @@ class PasscodeBiometricAuthUI {
         _sha256Passcode;
   }
 
+  /// An UI to show the passcode and biometric authentication dialogs
   PasscodeBiometricAuthUI({
     this.prefix = 'PasscodeBiometricAuth',
     this.maxRetries = 5,

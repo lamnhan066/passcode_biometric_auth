@@ -14,8 +14,10 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   final auth = PasscodeBiometricAuthUICached(
-    maxRetries: 5,
-    retryInSecond: 30,
+    checkConfig: const CheckConfig(
+      maxRetries: 5,
+      waitWhenMaxRetriesReached: 30,
+    ),
     onForgetPasscode: (context, authUI) async {
       if (await _forgetPasscode(context)) {
         return true;
@@ -58,7 +60,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Example'),
+        title: const Text('Passcode Biometric Auth'),
       ),
       body: Center(
         child: Column(

@@ -66,15 +66,14 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         FocusScope.of(context).requestFocus(focusNode);
       });
       if (_retryCounter >= widget.checkConfig.maxRetries) {
-        maxRetriesExceededCounter(
-            widget.checkConfig.waitWhenMaxRetriesExceeded * 1000);
+        maxRetriesExceededCounter(widget.checkConfig.retryInSecond * 1000);
       } else {
         setState(() {
           error = widget.checkConfig.incorrectText
               .replaceAll('@{counter}', '$_retryCounter')
               .replaceAll('@{maxRetries}', '${widget.checkConfig.maxRetries}')
-              .replaceAll('@{retryInSecond}',
-                  '${widget.checkConfig.waitWhenMaxRetriesExceeded}');
+              .replaceAll(
+                  '@{retryInSecond}', '${widget.checkConfig.retryInSecond}');
         });
       }
     }

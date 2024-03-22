@@ -26,7 +26,7 @@ class CheckConfig extends DialogConfig {
 
   /// A delay in second when the max number of retries is exceeded. It's also cached in
   /// local database so the user have to wait even after the app is terminated.
-  final int waitWhenMaxRetriesExceeded;
+  final int retryInSecond;
 
   /// `Forget your passcode?` button.
   final String forgotButtonText;
@@ -44,7 +44,7 @@ class CheckConfig extends DialogConfig {
   /// Configuration for the check dialog.
   const CheckConfig({
     this.maxRetries = 5,
-    this.waitWhenMaxRetriesExceeded = 300,
+    this.retryInSecond = 300,
     super.content = 'Input Passcode',
     super.subcontent,
     super.incorrectText =

@@ -29,7 +29,7 @@ class CheckConfig extends DialogConfig {
   final int waitWhenMaxRetriesReached;
 
   /// `Forget your passcode?` button.
-  final String forgetButtonText;
+  final String forgotButtonText;
 
   /// An error text that shown when the maximum number of retries is reached.
   final String maxRetriesReachedText;
@@ -50,7 +50,7 @@ class CheckConfig extends DialogConfig {
     super.incorrectText =
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
             'You\'ll be locked in @{retryInSecond}s when the max number of retries is reached',
-    this.forgetButtonText = 'Forgot your passcode?',
+    this.forgotButtonText = 'Forgot your passcode?',
     this.useBiometricCheckboxText = 'Use biometric authentication',
     this.maxRetriesReachedText =
         'The max number of retries is reached\nPlease try again in @{second}s',

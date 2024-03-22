@@ -44,7 +44,7 @@ class PasscodeBiometricAuthUI {
   /// This method is called when users tap the `forgot your passcode` button.
   /// We usually use a dialog to show the cautions when users want to reset their passcode.
   /// The passcode will be removed if this method returns `true`.
-  late final Future<bool> Function(BuildContext context)? onForgetPasscode;
+  late final Future<bool> Function(BuildContext context)? onForgotPasscode;
 
   /// This callback will be triggered when users reach the maximum number of retries.
   final void Function()? onMaxRetriesReached;
@@ -95,7 +95,7 @@ class PasscodeBiometricAuthUI {
     this.blurSigma = 15,
     this.onMaxRetriesReached,
     Future<bool> Function(BuildContext context, PasscodeBiometricAuthUI authUI)?
-        onForgetPasscode,
+        onForgotPasscode,
     this.onRead,
     this.onWrite,
     this.hapticFeedbackType = HapticFeedbackType.lightImpact,
@@ -103,10 +103,10 @@ class PasscodeBiometricAuthUI {
   }) {
     _isUseBiometric = isUseBiometric;
     _sha256Passcode = sha256Passcode;
-    this.onForgetPasscode = onForgetPasscode == null
+    this.onForgotPasscode = onForgotPasscode == null
         ? null
         : (context) async {
-            if (await onForgetPasscode(context, this)) {
+            if (await onForgotPasscode(context, this)) {
               await removePasscode();
               return true;
             }
@@ -215,11 +215,11 @@ class PasscodeBiometricAuthUI {
           sha256Passcode: code,
           title: title,
           checkConfig: checkConfig,
-          onForgetPasscode: onForgetPasscode == null
+          onForgetPasscode: onForgotPasscode == null
               ? null
               : () async {
                   Navigator.pop(ctx);
-                  onForgetPasscode!(context);
+                  onForgotPasscode!(context);
                 },
           onMaxRetriesReached: onMaxRetriesReached,
           onRead: onRead,

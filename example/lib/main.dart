@@ -18,15 +18,15 @@ class _AppState extends State<App> {
       maxRetries: 5,
       waitWhenMaxRetriesReached: 30,
     ),
-    onForgetPasscode: (context, authUI) async {
-      if (await _forgetPasscode(context)) {
+    onForgotPasscode: (context, authUI) async {
+      if (await _forgotPasscode(context)) {
         return true;
       }
       return false;
     },
   );
 
-  static Future<bool> _forgetPasscode(BuildContext context) async {
+  static Future<bool> _forgotPasscode(BuildContext context) async {
     final result = await showDialog<bool>(
         context: context,
         builder: (ctx) {

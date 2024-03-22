@@ -180,7 +180,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
                   widget.onForgetPasscode!();
                 },
                 child: Text(
-                  widget.checkConfig.forgetButtonText,
+                  widget.checkConfig.forgotButtonText,
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),

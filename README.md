@@ -14,18 +14,18 @@ final passcodeBiometric = PasscodeBiometricAuthUICached(
   checkCancelButtonText: 'Cancel'.tr,
   createContent: 'Create Passcode'.tr,
   createSubContent: 'Please remember your passcode. '
-          'When you forget your passcode, you can reset it but '
+          'When you forgot your passcode, you can reset it but '
           'all your cards will be removed from your local storage '
           'and your Google account will be signed out.'
       .tr,
-  forgetText: 'Forgot your passcode?'.tr,
+  forgotText: 'Forgot your passcode?'.tr,
   repeatIncorrectText: 'This passcode is not correct'.tr,
   repeatContent: 'Repeat Passcode'.tr,
   useBiometricChecboxText: 'Use biometric authentication'.tr,
   maxRetriesExceeededText:
       'Maximum retries are exceeded\nPlease try again in @{second}s'.tr,
   onForgetPasscode: (context, localAuth) async {
-    final isAllowed = await _forgetPassword(context);
+    final isAllowed = await _forgotPassword(context);
 
     if (isAllowed) {
       await Future.wait([
@@ -48,7 +48,7 @@ final passcodeBiometric = PasscodeBiometricAuthUICached(
   },
 );
 
-Future<bool> _forgetPassword(BuildContext context) async {
+Future<bool> _forgotPassword(BuildContext context) async {
   final result = await boxWDialog<bool>(
     backgroundColor: generalController.backgroundColor,
     context: context,

@@ -5,6 +5,11 @@ import 'models/on_write.dart';
 import 'passcode_biometric_auth_ui.dart';
 
 class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
+  /// This is the same as [PasscodeBiometricAuthUI] but with built-in [onRead]
+  /// and [onWrite] using `SharedPreferences`.
+  ///
+  /// If you want to use a more secure way to cache the data then you need to
+  /// use [PasscodeBiometricAuthUI].
   PasscodeBiometricAuthUICached({
     super.prefix,
     super.forceCreatePasscode,
@@ -12,13 +17,11 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.checkConfig,
     super.createConfig,
     super.repeatConfig,
-    super.onMaxRetriesReached,
-    super.onForgetPasscode,
     super.blurSigma,
+    super.onMaxRetriesReached,
+    super.onForgotPasscode,
     super.hapticFeedbackType,
     super.dialogBuilder,
-    OnRead? onRead,
-    OnWrite? onWrite,
   }) : super(
           sha256Passcode: '',
           onRead: _onRead(prefix),

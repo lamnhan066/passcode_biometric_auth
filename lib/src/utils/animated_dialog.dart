@@ -23,10 +23,7 @@ Future<T?> animatedDialog<T>({
           sigmaY: blurSigma * value,
         ),
         child: FadeTransition(
-          opacity: CurvedAnimation(
-            parent: animation,
-            curve: Curves.fastEaseInToSlowEaseOut,
-          ),
+          opacity: AlwaysStoppedAnimation(value),
           child: child,
         ),
       );

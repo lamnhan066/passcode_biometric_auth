@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
 
 import 'repeat_passcode.dart';
@@ -52,8 +53,9 @@ class CreatePasscode extends StatelessWidget {
               obscureText: true,
               closeKeyboardWhenCompleted: false,
               onCompleted: (code) async {
-                final c = await showDialog<bool>(
+                final c = await animatedDialog<bool>(
                   context: context,
+                  blurSigma: 0,
                   builder: (_) => RepeatPasscode(
                     passcode: code,
                     title: title,

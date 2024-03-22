@@ -7,7 +7,7 @@ import '../models/check_passcode_state.dart';
 import '../models/on_read.dart';
 import '../models/on_write.dart';
 import '../passcode_biometric_auth_ui.dart';
-import '../pref_keys.dart';
+import '../utils/pref_keys.dart';
 
 class CheckPasscode extends StatefulWidget {
   const CheckPasscode({
@@ -84,7 +84,8 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         setState(() {
           error = widget.incorrectText
               .replaceAll('@{counter}', '$_retryCounter')
-              .replaceAll('@{maxRetries}', '${widget.maxRetries}');
+              .replaceAll('@{maxRetries}', '${widget.maxRetries}')
+              .replaceAll('@{retryInSecond}', '${widget.retryInSecond}');
         });
       }
     }

@@ -7,13 +7,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:passcode_biometric_auth/src/models/check_passcode_state.dart';
+import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
 
 import 'components/check_passcode.dart';
 import 'components/create_passcode.dart';
 import 'models/on_read.dart';
 import 'models/on_write.dart';
-import 'pref_keys.dart';
+import 'utils/pref_keys.dart';
 
 class PasscodeBiometricAuthUI {
   final String prefix;
@@ -64,21 +65,21 @@ class PasscodeBiometricAuthUI {
     bool isUseBiometric = false,
     this.forceCreatePasscode = true,
     this.title = 'Passcode',
-    this.checkContent = 'Input your passcode',
+    this.checkContent = 'Input Passcode',
     this.checkIncorrectText =
-        'This passcode is incorrect (max: @{counter}/@{maxRetries} times)',
+        'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
+            'You\'ll be locked in @{retryInSecond}s when the max retries are reached',
     this.checkCancelButtonText,
-    this.createContent = 'Create your passcode',
+    this.createContent = 'Create Passcode',
     this.createSubContent,
     this.createCancelButtonText,
     this.forgetText = 'Forgot your passcode?',
-    this.repeatContent = 'Repeat your passcode',
-    this.repeatIncorrectText =
-        'This passcode is incorrect (number: @{counter})',
+    this.repeatContent = 'Repeat Passcode',
+    this.repeatIncorrectText = 'This passcode is incorrect (times: @{counter})',
     this.repeatBackButtonText,
     this.useBiometricChecboxText = 'Use biometric authentication',
     this.maxRetriesExceeededText =
-        'Maximum retries are exceeded\nPlease try again in @{second}s',
+        'The max retries are reached\nPlease try again in @{second}s',
     this.biometricReason = 'Please authenticate to use this feature',
     this.blurSigma = 15,
     this.onMaxRetriesExceeded,
@@ -102,20 +103,25 @@ class PasscodeBiometricAuthUI {
           };
   }
 
-  Future<bool> authenticate(BuildContext context) async {
+  Future<bool> authenticate(
+    BuildContext context, {
+    bool? forceCreatePasscode,
+    bool? isUseBiometric,
+  }) async {
     bool? authenticated;
+    forceCreatePasscode ??= this.forceCreatePasscode;
+    isUseBiometric ??= await this.isUseBiometric;
 
     final isPasscodeAvailable = await isAvailablePasscode();
     final isNeedCreatePasscode = forceCreatePasscode && !isPasscodeAvailable;
 
-    if (!isNeedCreatePasscode && await isUseBiometric) {
+    if (!isNeedCreatePasscode && isUseBiometric) {
       authenticated = await isBiometricAuthenticated();
     }
 
     if (authenticated == true) return true;
 
-    String code = await sha256Passcode;
-    if (code == '') {
+    if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
       return code != '';
@@ -123,6 +129,20 @@ class PasscodeBiometricAuthUI {
       if (!context.mounted) return false;
       final isAuthenticated = await authenticateWithPasscode(context);
       return isAuthenticated == true;
+    }
+  }
+
+  Future<bool> changePasscode(BuildContext context) async {
+    final isPasscodeAvailable = await isAvailablePasscode();
+    if (!isPasscodeAvailable) {
+      if (!context.mounted) return false;
+      final code = await _createPasscode(context);
+      return code != '';
+    } else {
+      if (!context.mounted) return false;
+      final isAuthenticated = await authenticateWithPasscode(context);
+      if (!isAuthenticated || !context.mounted) return false;
+      return (await _createPasscode(context)) != '';
     }
   }
 
@@ -164,12 +184,11 @@ class PasscodeBiometricAuthUI {
     final code = await sha256Passcode;
     if (!context.mounted) return false;
 
-    final state = await showDialog<CheckPasscodeState>(
+    final state = await animatedDialog<CheckPasscodeState>(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: CheckPasscode(
+      blurSigma: blurSigma,
+      builder: (ctx) {
+        return CheckPasscode(
           localAuth: this,
           maxRetries: maxRetries,
           retryInSecond: retryInSecond,
@@ -192,8 +211,8 @@ class PasscodeBiometricAuthUI {
           onWrite: onWrite,
           hapticFeedbackType: hapticFeedbackType,
           dialogBuilder: dialogBuilder,
-        ),
-      ),
+        );
+      },
     );
 
     if (state == null) return false;
@@ -232,9 +251,9 @@ class PasscodeBiometricAuthUI {
   Future<String> _createPasscode(BuildContext context) async {
     if (!context.mounted) return '';
 
-    final recievedCode = await showDialog(
+    final recievedCode = await animatedDialog(
       context: context,
-      barrierDismissible: false,
+      blurSigma: blurSigma,
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: CreatePasscode(

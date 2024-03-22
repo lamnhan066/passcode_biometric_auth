@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:pinput/pinput.dart';
 
 import '../models/check_passcode_state.dart';
@@ -12,38 +13,24 @@ import '../utils/pref_keys.dart';
 class CheckPasscode extends StatefulWidget {
   const CheckPasscode({
     super.key,
-    required this.maxRetries,
-    required this.retryInSecond,
     required this.localAuth,
     required this.sha256Passcode,
     required this.title,
-    required this.content,
-    required this.forgetText,
-    required this.incorrectText,
-    required this.useBiometricChecboxText,
-    required this.maxRetriesExceededText,
+    required this.checkConfig,
     required this.onForgetPasscode,
-    required this.onMaxRetriesExceeded,
-    required this.cancelButtonText,
+    required this.onMaxRetriesReached,
     required this.onRead,
     required this.onWrite,
     required this.hapticFeedbackType,
     required this.dialogBuilder,
   });
 
-  final int maxRetries;
-  final int retryInSecond;
   final PasscodeBiometricAuthUI localAuth;
   final String? sha256Passcode;
   final String title;
-  final String content;
-  final String forgetText;
-  final String incorrectText;
-  final String maxRetriesExceededText;
-  final String? useBiometricChecboxText;
-  final String? cancelButtonText;
+  final CheckConfig checkConfig;
   final Future<void> Function()? onForgetPasscode;
-  final void Function()? onMaxRetriesExceeded;
+  final void Function()? onMaxRetriesReached;
   final OnRead? onRead;
   final OnWrite? onWrite;
   final HapticFeedbackType hapticFeedbackType;
@@ -78,33 +65,27 @@ class _CheckPasscodeState extends State<CheckPasscode> {
       Future.delayed(const Duration(milliseconds: 100)).then((value) {
         FocusScope.of(context).requestFocus(focusNode);
       });
-      if (_retryCounter >= widget.maxRetries) {
-        maxRetriesExceededCounter(widget.retryInSecond * 1000);
+      if (_retryCounter >= widget.checkConfig.maxRetries) {
+        maxRetriesExceededCounter(
+            widget.checkConfig.waitWhenMaxRetriesReached * 1000);
       } else {
         setState(() {
-          error = widget.incorrectText
+          error = widget.checkConfig.incorrectText
               .replaceAll('@{counter}', '$_retryCounter')
-              .replaceAll('@{maxRetries}', '${widget.maxRetries}')
-              .replaceAll('@{retryInSecond}', '${widget.retryInSecond}');
+              .replaceAll('@{maxRetries}', '${widget.checkConfig.maxRetries}')
+              .replaceAll('@{retryInSecond}',
+                  '${widget.checkConfig.waitWhenMaxRetriesReached}');
         });
       }
     }
   }
 
-  void onChanged(String code) {
-    // if (error != null && code.length < 6) {
-    //   setState(() {
-    //     error = null;
-    //   });
-    // }
-  }
-
   void maxRetriesExceededCounter(int retryInSecond) {
     timer?.cancel();
-    _retryCounter = widget.maxRetries;
+    _retryCounter = widget.checkConfig.maxRetries;
     int second = retryInSecond;
-    if (widget.onMaxRetriesExceeded != null) {
-      widget.onMaxRetriesExceeded!();
+    if (widget.onMaxRetriesReached != null) {
+      widget.onMaxRetriesReached!();
     }
     timer = Timer.periodic(const Duration(milliseconds: 100), (timer) async {
       second -= 100;
@@ -117,16 +98,15 @@ class _CheckPasscodeState extends State<CheckPasscode> {
           FocusScope.of(context).requestFocus(focusNode);
         });
         timer.cancel();
-        widget.onWrite
-            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
+        widget.onWrite?.writeInt(PrefKeys.lastRetriesReachedRemainingSecond, 0);
         return;
       }
       if (second % 1000 == 0) {
         widget.onWrite
-            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, second);
+            ?.writeInt(PrefKeys.lastRetriesReachedRemainingSecond, second);
       }
       setState(() {
-        error = widget.maxRetriesExceededText
+        error = widget.checkConfig.maxRetriesReachedText
             .replaceAll('@{second}', (second / 1000).toStringAsFixed(2));
       });
     });
@@ -134,7 +114,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
 
   void init() async {
     final second = await widget.onRead
-        ?.readInt(PrefKeys.lastRetriesExceededRemainingSecond);
+        ?.readInt(PrefKeys.lastRetriesReachedRemainingSecond);
     if (second != null && second > 0) {
       maxRetriesExceededCounter(second);
     } else {
@@ -159,6 +139,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
   @override
   Widget build(BuildContext context) {
     final title = widget.title;
+
     final content = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -167,20 +148,20 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(widget.content, style: const TextStyle(fontSize: 18)),
+          Text(widget.checkConfig.content,
+              style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Pinput(
               controller: textController,
               focusNode: focusNode,
-              enabled: _retryCounter < widget.maxRetries,
+              enabled: _retryCounter < widget.checkConfig.maxRetries,
               length: 6,
               hapticFeedbackType: widget.hapticFeedbackType,
               obscureText: true,
               closeKeyboardWhenCompleted: false,
               onCompleted: onCompleted,
-              onChanged: onChanged,
             ),
           ),
           if (error != null) ...[
@@ -199,71 +180,72 @@ class _CheckPasscodeState extends State<CheckPasscode> {
                   widget.onForgetPasscode!();
                 },
                 child: Text(
-                  widget.forgetText,
+                  widget.checkConfig.forgetButtonText,
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
             ),
-          if (widget.useBiometricChecboxText != null)
-            FutureBuilder(
-              future: widget.localAuth.isBiometricAvailable(),
-              builder: (ctx, snapshot) {
-                if (!snapshot.hasData || snapshot.data != true) {
-                  return const SizedBox.shrink();
-                }
-                return FutureBuilder<bool>(
-                    future: Future.value(widget.localAuth.isUseBiometric),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox.shrink();
-                      }
+          FutureBuilder(
+            future: widget.localAuth.isBiometricAvailable(),
+            builder: (ctx, snapshot) {
+              if (!snapshot.hasData || snapshot.data != true) {
+                return const SizedBox.shrink();
+              }
+              return FutureBuilder<bool>(
+                  future: Future.value(widget.localAuth.isUseBiometric),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
 
-                      if (snapshot.hasData && isBiometricChecked == null) {
-                        isBiometricChecked = snapshot.data!;
-                      }
+                    if (snapshot.hasData && isBiometricChecked == null) {
+                      isBiometricChecked = snapshot.data!;
+                    }
 
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Checkbox(
-                            value: isBiometricChecked,
-                            onChanged: (value) async {
-                              if (value != null) {
-                                if (value == true) {
-                                  if (await widget.localAuth
-                                          .isBiometricAuthenticated() ==
-                                      true) {
-                                    setState(() {
-                                      isBiometricChecked = true;
-                                    });
-                                  }
-                                } else {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Checkbox(
+                          value: isBiometricChecked,
+                          onChanged: (value) async {
+                            if (value != null) {
+                              if (value == true) {
+                                if (await widget.localAuth
+                                        .authenticateWithBiometric() ==
+                                    true) {
                                   setState(() {
-                                    isBiometricChecked = false;
+                                    isBiometricChecked = true;
                                   });
                                 }
+                              } else {
+                                setState(() {
+                                  isBiometricChecked = false;
+                                });
                               }
-                            },
-                          ),
-                          Text(widget.useBiometricChecboxText!),
-                        ],
-                      );
-                    });
-              },
-            ),
+                            }
+                          },
+                        ),
+                        Text(widget.checkConfig.useBiometricCheckboxText),
+                      ],
+                    );
+                  });
+            },
+          ),
         ],
       ),
     );
-    final actions = widget.cancelButtonText == null
+
+    final actions = widget.checkConfig.buttonText == null
         ? null
         : [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text(widget.cancelButtonText!),
+              child: Text(widget.checkConfig.buttonText!),
             ),
           ];
+
     Widget child;
     if (widget.dialogBuilder != null) {
       child = widget.dialogBuilder!(context, title, content, actions);
@@ -274,6 +256,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         actions: actions,
       );
     }
+
     return child;
   }
 }

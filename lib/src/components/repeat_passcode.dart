@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:pinput/pinput.dart';
 
 class RepeatPasscode extends StatefulWidget {
@@ -6,18 +7,14 @@ class RepeatPasscode extends StatefulWidget {
     super.key,
     required this.passcode,
     required this.title,
-    required this.content,
-    required this.incorrectText,
+    required this.repeatConfig,
     required this.hapticFeedbackType,
-    required this.backButtonText,
     required this.dialogBuilder,
   });
 
   final String passcode;
   final String title;
-  final String content;
-  final String incorrectText;
-  final String? backButtonText;
+  final RepeatConfig repeatConfig;
   final HapticFeedbackType hapticFeedbackType;
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? buttons)? dialogBuilder;
@@ -43,24 +40,17 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
         FocusScope.of(context).requestFocus(focusNode);
       });
       setState(() {
-        error = widget.incorrectText
+        error = widget.repeatConfig.incorrectText
             .replaceAll('@{counter}', '$_retryCounter')
             .replaceAll('@{maxRetries}', '');
       });
     }
   }
 
-  void onChanged(code) {
-    // if (error != null && code.length < 6) {
-    //   setState(() {
-    //     error = null;
-    //   });
-    // }
-  }
-
   @override
   Widget build(BuildContext context) {
     final title = widget.title;
+
     final content = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -69,7 +59,10 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(widget.content, style: const TextStyle(fontSize: 18)),
+          Text(
+            widget.repeatConfig.content,
+            style: const TextStyle(fontSize: 18),
+          ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -82,7 +75,6 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
               obscureText: true,
               closeKeyboardWhenCompleted: false,
               onCompleted: onCompleted,
-              onChanged: onChanged,
             ),
           ),
           if (error != null) ...[
@@ -96,16 +88,18 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
         ],
       ),
     );
-    final buttons = widget.backButtonText == null
+
+    final buttons = widget.repeatConfig.buttonText == null
         ? null
         : [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text(widget.backButtonText!),
+              child: Text(widget.repeatConfig.buttonText!),
             ),
           ];
+
     Widget child;
     if (widget.dialogBuilder != null) {
       child = widget.dialogBuilder!(context, title, content, buttons);
@@ -116,6 +110,7 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
         actions: buttons,
       );
     }
+
     return child;
   }
 }

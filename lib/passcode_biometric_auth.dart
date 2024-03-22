@@ -1,5 +1,6 @@
 library passcode_biometric_auth;
 
+export 'src/models/dialog_configs.dart';
 export 'src/models/on_read.dart';
 export 'src/models/on_write.dart';
 export 'src/passcode_biometric_auth.dart';

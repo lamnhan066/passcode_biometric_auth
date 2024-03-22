@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
 
@@ -11,29 +12,41 @@ class CreatePasscode extends StatelessWidget {
   const CreatePasscode({
     super.key,
     required this.title,
-    required this.content,
-    required this.subContent,
-    required this.repeatContent,
-    required this.incorrectText,
+    required this.createConfig,
+    required this.repeatConfig,
     required this.hapticFeedbackType,
-    required this.cancelButtonText,
-    required this.repeatBackButtonText,
     required this.dialogBuilder,
   });
 
   final String title;
-  final String content;
-  final String? subContent;
-  final String repeatContent;
-  final String incorrectText;
-  final String? cancelButtonText;
-  final String? repeatBackButtonText;
+  final CreateConfig createConfig;
+  final RepeatConfig repeatConfig;
   final HapticFeedbackType hapticFeedbackType;
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? buttons)? dialogBuilder;
 
   @override
   Widget build(BuildContext context) {
+    void onCompleted(code) async {
+      final c = await animatedDialog<bool>(
+        context: context,
+        blurSigma: 0,
+        builder: (_) => RepeatPasscode(
+          passcode: code,
+          title: title,
+          repeatConfig: repeatConfig,
+          hapticFeedbackType: hapticFeedbackType,
+          dialogBuilder: dialogBuilder,
+        ),
+      );
+
+      if (c == true && context.mounted) {
+        final passcodeSHA256 =
+            base64Encode(sha256.convert(utf8.encode(code)).bytes);
+        Navigator.pop(context, passcodeSHA256);
+      }
+    }
+
     final widgetContent = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -42,7 +55,7 @@ class CreatePasscode extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(content, style: const TextStyle(fontSize: 18)),
+          Text(createConfig.content, style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.all(8),
@@ -52,34 +65,14 @@ class CreatePasscode extends StatelessWidget {
               hapticFeedbackType: hapticFeedbackType,
               obscureText: true,
               closeKeyboardWhenCompleted: false,
-              onCompleted: (code) async {
-                final c = await animatedDialog<bool>(
-                  context: context,
-                  blurSigma: 0,
-                  builder: (_) => RepeatPasscode(
-                    passcode: code,
-                    title: title,
-                    content: repeatContent,
-                    incorrectText: incorrectText,
-                    hapticFeedbackType: hapticFeedbackType,
-                    backButtonText: repeatBackButtonText,
-                    dialogBuilder: dialogBuilder,
-                  ),
-                );
-
-                if (c == true && context.mounted) {
-                  final passcodeSHA256 =
-                      base64Encode(sha256.convert(utf8.encode(code)).bytes);
-                  Navigator.pop(context, passcodeSHA256);
-                }
-              },
+              onCompleted: onCompleted,
             ),
           ),
-          if (subContent != null)
+          if (createConfig.subcontent != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                subContent!,
+                createConfig.subcontent!,
                 style: const TextStyle(fontSize: 13),
                 textAlign: TextAlign.justify,
               ),
@@ -87,16 +80,18 @@ class CreatePasscode extends StatelessWidget {
         ],
       ),
     );
-    final buttons = cancelButtonText == null
+
+    final buttons = createConfig.buttonText == null
         ? null
         : [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text(cancelButtonText!),
+              child: Text(createConfig.buttonText!),
             ),
           ];
+
     Widget child;
     if (dialogBuilder != null) {
       child = dialogBuilder!(context, title, widgetContent, buttons);
@@ -107,6 +102,7 @@ class CreatePasscode extends StatelessWidget {
         actions: buttons,
       );
     }
+
     return child;
   }
 }

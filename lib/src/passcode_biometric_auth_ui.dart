@@ -80,7 +80,7 @@ class PasscodeBiometricAuthUI {
     this.maxRetriesExceeededText =
         'Maximum retries are exceeded\nPlease try again in @{second}s',
     this.biometricReason = 'Please authenticate to use this feature',
-    this.blurSigma = 10,
+    this.blurSigma = 15,
     this.onMaxRetriesExceeded,
     Future<bool> Function(BuildContext context, PasscodeBiometricAuthUI authUI)?
         onForgetPasscode,

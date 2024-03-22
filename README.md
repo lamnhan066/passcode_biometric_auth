@@ -1,4 +1,4 @@
-# Passcode Biometric Authe
+# Passcode Biometric Auth
 
 A Flutter package that combines both passcode and biometric authentications effectively.
 
@@ -18,7 +18,7 @@ final authUI = PasscodeBiometricAuthUICached(
     content: 'Input Passcode',
     incorrectText:
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-        'You\'ll be locked in @{retryInSecond}s when the max number of retries is exceeded',
+        'The app will be locked in @{retryInSecond}s when the max number of retries is exceeded',
     forgotButtonText: 'Forgot your passcode?',
     useBiometricCheckboxText: 'Use biometric authentication',
     maxRetries: 5,

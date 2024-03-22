@@ -49,7 +49,7 @@ class CheckConfig extends DialogConfig {
     super.subcontent,
     super.incorrectText =
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-            'You\'ll be locked in @{retryInSecond}s when the max number of retries is exceeded',
+            'The app will be locked in @{retryInSecond}s when the max number of retries is exceeded',
     this.forgotButtonText = 'Forgot your passcode?',
     this.useBiometricCheckboxText = 'Use biometric authentication',
     this.maxRetriesExceededText =

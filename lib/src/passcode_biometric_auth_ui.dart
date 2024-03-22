@@ -47,7 +47,7 @@ class PasscodeBiometricAuthUI {
   late final Future<bool> Function(BuildContext context)? onForgotPasscode;
 
   /// This callback will be triggered when users reach the maximum number of retries.
-  final void Function()? onMaxRetriesReached;
+  final void Function()? onMaxRetriesExceeded;
 
   /// All configuration that needs to be read from the local database will
   /// be called through these methods.
@@ -93,7 +93,7 @@ class PasscodeBiometricAuthUI {
     this.createConfig = const CreateConfig(),
     this.repeatConfig = const RepeatConfig(),
     this.blurSigma = 15,
-    this.onMaxRetriesReached,
+    this.onMaxRetriesExceeded,
     Future<bool> Function(BuildContext context, PasscodeBiometricAuthUI authUI)?
         onForgotPasscode,
     this.onRead,
@@ -221,7 +221,7 @@ class PasscodeBiometricAuthUI {
                   Navigator.pop(ctx);
                   onForgotPasscode!(context);
                 },
-          onMaxRetriesReached: onMaxRetriesReached,
+          onMaxRetriesExceeded: onMaxRetriesExceeded,
           onRead: onRead,
           onWrite: onWrite,
           hapticFeedbackType: hapticFeedbackType,
@@ -258,7 +258,7 @@ class PasscodeBiometricAuthUI {
   Future<void> removePasscode() async {
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
-    await onWrite?.writeInt(PrefKeys.lastRetriesReachedRemainingSecond, 0);
+    await onWrite?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
     _sha256Passcode = '';
   }
 

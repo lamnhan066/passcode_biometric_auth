@@ -1,6 +1,6 @@
 class PrefKeys {
   /// Save the remaining seconds when counting down.
-  static const lastRetriesReachedRemainingSecond =
+  static const lastRetriesExceededRemainingSecond =
       'LastRetriesExceededRemainingSecond';
 
   /// Save the state of `isUseBiometric`.

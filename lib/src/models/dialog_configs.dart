@@ -24,15 +24,15 @@ class CheckConfig extends DialogConfig {
   /// Max times to retry when inputting the passcode.
   final int maxRetries;
 
-  /// A delay in second when the max number of retries is reached. It's also cached in
+  /// A delay in second when the max number of retries is exceeded. It's also cached in
   /// local database so the user have to wait even after the app is terminated.
-  final int waitWhenMaxRetriesReached;
+  final int waitWhenMaxRetriesExceeded;
 
   /// `Forget your passcode?` button.
   final String forgotButtonText;
 
-  /// An error text that shown when the maximum number of retries is reached.
-  final String maxRetriesReachedText;
+  /// An error text that shown when the maximum number of retries is exceeded.
+  final String maxRetriesExceededText;
 
   /// A checkbox that allows users to use biometric authentication instead of a passcode.
   /// This checkbox only shows on the supported device using the `local_auth` package.
@@ -44,16 +44,16 @@ class CheckConfig extends DialogConfig {
   /// Configuration for the check dialog.
   const CheckConfig({
     this.maxRetries = 5,
-    this.waitWhenMaxRetriesReached = 300,
+    this.waitWhenMaxRetriesExceeded = 300,
     super.content = 'Input Passcode',
     super.subcontent,
     super.incorrectText =
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-            'You\'ll be locked in @{retryInSecond}s when the max number of retries is reached',
+            'You\'ll be locked in @{retryInSecond}s when the max number of retries is exceeded',
     this.forgotButtonText = 'Forgot your passcode?',
     this.useBiometricCheckboxText = 'Use biometric authentication',
-    this.maxRetriesReachedText =
-        'The max number of retries is reached\nPlease try again in @{second}s',
+    this.maxRetriesExceededText =
+        'The max number of retries is exceeded\nPlease try again in @{second}s',
     this.biometricReason = 'Please authenticate to use this feature',
     super.buttonText,
   });

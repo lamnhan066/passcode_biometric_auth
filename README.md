@@ -18,12 +18,12 @@ final authUI = PasscodeBiometricAuthUICached(
     content: 'Input Passcode',
     incorrectText:
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-        'You\'ll be locked in @{retryInSecond}s when the max number of retries is reached',
+        'You\'ll be locked in @{retryInSecond}s when the max number of retries is exceeded',
     forgotButtonText: 'Forgot your passcode?',
     useBiometricCheckboxText: 'Use biometric authentication',
     maxRetries: 5,
-    maxRetriesReachedText:
-        'Maximum number of retries is reached\nPlease try again in @{second}s',
+    maxRetriesExceededText:
+        'Maximum number of retries is exceeded\nPlease try again in @{second}s',
     biometricReason: 'Please authenticate to use this feature',
   ),
   createConfig: const CreateConfig(

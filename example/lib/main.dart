@@ -16,7 +16,7 @@ class _AppState extends State<App> {
   final auth = PasscodeBiometricAuthUICached(
     checkConfig: const CheckConfig(
       maxRetries: 5,
-      waitWhenMaxRetriesReached: 30,
+      waitWhenMaxRetriesExceeded: 30,
     ),
     onForgotPasscode: (context, authUI) async {
       if (await _forgotPasscode(context)) {

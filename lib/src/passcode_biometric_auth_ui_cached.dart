@@ -18,7 +18,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
     super.createConfig,
     super.repeatConfig,
     super.blurSigma,
-    super.onMaxRetriesReached,
+    super.onMaxRetriesExceeded,
     super.onForgotPasscode,
     super.hapticFeedbackType,
     super.dialogBuilder,

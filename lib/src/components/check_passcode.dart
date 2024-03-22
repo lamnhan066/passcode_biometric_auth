@@ -18,7 +18,7 @@ class CheckPasscode extends StatefulWidget {
     required this.title,
     required this.checkConfig,
     required this.onForgetPasscode,
-    required this.onMaxRetriesReached,
+    required this.onMaxRetriesExceeded,
     required this.onRead,
     required this.onWrite,
     required this.hapticFeedbackType,
@@ -30,7 +30,7 @@ class CheckPasscode extends StatefulWidget {
   final String title;
   final CheckConfig checkConfig;
   final Future<void> Function()? onForgetPasscode;
-  final void Function()? onMaxRetriesReached;
+  final void Function()? onMaxRetriesExceeded;
   final OnRead? onRead;
   final OnWrite? onWrite;
   final HapticFeedbackType hapticFeedbackType;
@@ -67,14 +67,14 @@ class _CheckPasscodeState extends State<CheckPasscode> {
       });
       if (_retryCounter >= widget.checkConfig.maxRetries) {
         maxRetriesExceededCounter(
-            widget.checkConfig.waitWhenMaxRetriesReached * 1000);
+            widget.checkConfig.waitWhenMaxRetriesExceeded * 1000);
       } else {
         setState(() {
           error = widget.checkConfig.incorrectText
               .replaceAll('@{counter}', '$_retryCounter')
               .replaceAll('@{maxRetries}', '${widget.checkConfig.maxRetries}')
               .replaceAll('@{retryInSecond}',
-                  '${widget.checkConfig.waitWhenMaxRetriesReached}');
+                  '${widget.checkConfig.waitWhenMaxRetriesExceeded}');
         });
       }
     }
@@ -84,8 +84,8 @@ class _CheckPasscodeState extends State<CheckPasscode> {
     timer?.cancel();
     _retryCounter = widget.checkConfig.maxRetries;
     int second = retryInSecond;
-    if (widget.onMaxRetriesReached != null) {
-      widget.onMaxRetriesReached!();
+    if (widget.onMaxRetriesExceeded != null) {
+      widget.onMaxRetriesExceeded!();
     }
     timer = Timer.periodic(const Duration(milliseconds: 100), (timer) async {
       second -= 100;
@@ -98,15 +98,16 @@ class _CheckPasscodeState extends State<CheckPasscode> {
           FocusScope.of(context).requestFocus(focusNode);
         });
         timer.cancel();
-        widget.onWrite?.writeInt(PrefKeys.lastRetriesReachedRemainingSecond, 0);
+        widget.onWrite
+            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
         return;
       }
       if (second % 1000 == 0) {
         widget.onWrite
-            ?.writeInt(PrefKeys.lastRetriesReachedRemainingSecond, second);
+            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, second);
       }
       setState(() {
-        error = widget.checkConfig.maxRetriesReachedText
+        error = widget.checkConfig.maxRetriesExceededText
             .replaceAll('@{second}', (second / 1000).toStringAsFixed(2));
       });
     });
@@ -114,7 +115,7 @@ class _CheckPasscodeState extends State<CheckPasscode> {
 
   void init() async {
     final second = await widget.onRead
-        ?.readInt(PrefKeys.lastRetriesReachedRemainingSecond);
+        ?.readInt(PrefKeys.lastRetriesExceededRemainingSecond);
     if (second != null && second > 0) {
       maxRetriesExceededCounter(second);
     } else {

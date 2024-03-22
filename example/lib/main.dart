@@ -70,7 +70,7 @@ class _AppState extends State<App> {
               onPressed: () {
                 auth.authenticate(context);
               },
-              child: const Text('Lock'),
+              child: const Text('Authenticate'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

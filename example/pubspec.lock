@@ -17,14 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  boxw:
-    dependency: transitive
-    description:
-      name: boxw
-      sha256: af2367d984b01ab3ecd7aacbe78c2e5b729ab4260f53fef43289342217c83a02
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.34"
   characters:
     dependency: transitive
     description:
@@ -65,14 +57,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
-  equatable:
-    dependency: transitive
-    description:
-      name: equatable
-      sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5"
   fake_async:
     dependency: transitive
     description:
@@ -223,14 +207,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.10"
-  localdb:
-    dependency: transitive
-    description:
-      name: localdb
-      sha256: "0ced7f6420bfed403c21ce67f2f849fa91e93c3154a199ec4392004d6125ff18"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.3"
   matcher:
     dependency: transitive
     description:

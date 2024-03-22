@@ -1,6 +1,6 @@
 name: passcode_biometric_auth
 description: "A Flutter package that combines both passcode and biometric authentications effectively."
-version: 0.0.2+1
+version: 0.0.2+2
 homepage: https://github.com/lamnhan066/passcode_biometric_auth
 
 environment:

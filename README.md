@@ -18,7 +18,7 @@ final authUI = PasscodeBiometricAuthUICached(
     content: 'Input Passcode',
     incorrectText:
         'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-        'The app will be locked in @{retryInSecond}s when the max number of retries is exceeded',
+        'You have to wait for @{retryInSecond}s to try again when the max number of retries is exceeded',
     forgotButtonText: 'Forgot your passcode?',
     useBiometricCheckboxText: 'Use biometric authentication',
     maxRetries: 5,

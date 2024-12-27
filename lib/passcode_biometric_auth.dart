@@ -1,4 +1,4 @@
-library passcode_biometric_auth;
+library;
 
 export 'src/models/dialog_configs.dart';
 export 'src/models/on_read.dart';

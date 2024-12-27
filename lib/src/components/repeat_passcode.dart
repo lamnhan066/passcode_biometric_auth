@@ -37,7 +37,7 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
       _retryCounter++;
       textController.clear();
       Future.delayed(const Duration(milliseconds: 500)).then((value) {
-        FocusScope.of(context).requestFocus(focusNode);
+        if (mounted) FocusScope.of(context).requestFocus(focusNode);
       });
       setState(() {
         error = widget.repeatConfig.incorrectText

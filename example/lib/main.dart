@@ -13,10 +13,28 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final auth = PasscodeBiometricAuthUICached(
+  final authUI = PasscodeBiometricAuthUICached(
+    forceCreatePasscode: true,
+    title: 'Passcode',
     checkConfig: const CheckConfig(
       maxRetries: 5,
       retryInSecond: 30,
+      content: 'Input Passcode',
+      incorrectText:
+          'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
+          'You have to wait for @{retryInSecond}s to try again when the max number of retries is exceeded',
+      forgotButtonText: 'Forgot your passcode?',
+      useBiometricCheckboxText: 'Use biometric authentication',
+      maxRetriesExceededText:
+          'Maximum number of retries is exceeded\nPlease try again in @{second}s',
+      biometricReason: 'Please authenticate to use this feature',
+    ),
+    createConfig: const CreateConfig(
+      content: 'Create Passcode',
+      subcontent: 'Please remember your passcode. '
+          'When you forget your passcode, you can reset it but '
+          'all your cards will be removed from your local storage '
+          'and your Google account will be signed out.',
     ),
     onForgotPasscode: (context, authUI) async {
       if (await _forgotPasscode(context)) {
@@ -68,14 +86,14 @@ class _AppState extends State<App> {
           children: [
             ElevatedButton(
               onPressed: () {
-                auth.authenticate(context);
+                authUI.authenticate(context);
               },
               child: const Text('Authenticate'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                auth.changePasscode(context);
+                authUI.changePasscode(context);
               },
               child: const Text('Change Passcode'),
             ),

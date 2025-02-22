@@ -100,17 +100,11 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
             ),
           ];
 
-    Widget child;
-    if (widget.dialogBuilder != null) {
-      child = widget.dialogBuilder!(context, title, content, buttons);
-    } else {
-      child = AlertDialog(
-        title: Text(title),
-        content: content,
-        actions: buttons,
-      );
-    }
-
-    return child;
+    return widget.dialogBuilder?.call(context, title, content, buttons) ??
+        AlertDialog(
+          title: Text(title),
+          content: content,
+          actions: buttons,
+        );
   }
 }

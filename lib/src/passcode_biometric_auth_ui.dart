@@ -1,20 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ui';
 
-import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:passcode_biometric_auth/passcode_biometric_auth.dart';
 import 'package:passcode_biometric_auth/src/models/check_passcode_state.dart';
-import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
 
 import 'components/check_passcode.dart';
 import 'components/create_passcode.dart';
-import 'models/on_read.dart';
-import 'models/on_write.dart';
 import 'utils/pref_keys.dart';
 
 /// UI handler for passcode and biometric authentication dialogs.
@@ -69,7 +63,7 @@ class PasscodeBiometricAuthUI {
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
-  bool? _isBiometricAvailableCached;
+  late PasscodeBiometricAuth _delegate;
   late bool _isUseBiometric;
 
   /// Retrieves whether biometric authentication is enabled.
@@ -78,14 +72,12 @@ class PasscodeBiometricAuthUI {
         _isUseBiometric;
   }
 
-  late String _sha256Passcode;
-
   /// Retrieves the current passcode in SHA256 format.
   ///
   /// The raw passcode is not accessible; only its SHA256 hash.
   Future<String> get sha256Passcode async {
     return (await onRead?.readString(PrefKeys.sha256PasscodeKey)) ??
-        _sha256Passcode;
+        _delegate.sha256Passcode;
   }
 
   /// Creates an instance of [PasscodeBiometricAuthUI].
@@ -94,6 +86,7 @@ class PasscodeBiometricAuthUI {
   PasscodeBiometricAuthUI({
     this.prefix = 'PasscodeBiometricAuth',
     String sha256Passcode = '',
+    String salt = '',
     bool isUseBiometric = false,
     this.forceCreatePasscode = true,
     this.title = 'Passcode',
@@ -110,7 +103,12 @@ class PasscodeBiometricAuthUI {
     this.dialogBuilder,
   }) {
     _isUseBiometric = isUseBiometric;
-    _sha256Passcode = sha256Passcode;
+
+    _delegate = PasscodeBiometricAuth(
+      sha256Passcode: sha256Passcode,
+      salt: salt,
+    );
+
     this.onForgotPasscode = onForgotPasscode == null
         ? null
         : (context) async {
@@ -182,39 +180,13 @@ class PasscodeBiometricAuthUI {
   ///
   /// Results are cached for faster subsequent checks. Note: Biometric support
   /// is not available on web.
-  Future<bool> isBiometricAvailable() async {
-    if (_isBiometricAvailableCached != null) {
-      return _isBiometricAvailableCached!;
-    }
-
-    if (kIsWeb) {
-      _isBiometricAvailableCached = false;
-      return false;
-    }
-
-    var localAuth = LocalAuthentication();
-    final isDeviceSupported = await localAuth.isDeviceSupported();
-    if (!isDeviceSupported) {
-      _isBiometricAvailableCached = false;
-      return false;
-    }
-
-    _isBiometricAvailableCached = await localAuth.canCheckBiometrics;
-    return _isBiometricAvailableCached!;
-  }
+  Future<bool> isBiometricAvailable() => _delegate.isBiometricAvailable();
 
   /// Initiates biometric authentication.
   ///
   /// Returns `true` if the user is successfully authenticated with biometrics.
   Future<bool> authenticateWithBiometric() async {
-    if (!await isBiometricAvailable()) {
-      return false;
-    }
-
-    var localAuth = LocalAuthentication();
-    return await localAuth.authenticate(
-      localizedReason: checkConfig.biometricReason,
-    );
+    return _delegate.isPasscodeAuthenticated(checkConfig.biometricReason);
   }
 
   /// Initiates passcode authentication by displaying the passcode check dialog.
@@ -261,12 +233,7 @@ class PasscodeBiometricAuthUI {
   /// The passcode is compared using a SHA256 hash. Returns `true` if the
   /// computed hash matches the stored one.
   Future<bool> isPasscodeAuthenticated(String code) async {
-    final passcodeSHA256 =
-        base64Encode(sha256.convert(utf8.encode(code)).bytes);
-    if (passcodeSHA256 == await sha256Passcode) {
-      return true;
-    }
-    return false;
+    return _delegate.isPasscodeAuthenticated(code);
   }
 
   /// Updates the preference to use biometric authentication.
@@ -286,14 +253,14 @@ class PasscodeBiometricAuthUI {
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
     await onWrite?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
-    _sha256Passcode = '';
+    _delegate = _delegate.copyWith(sha256Passcode: '');
   }
 
   /// Checks if a passcode is already set.
   ///
   /// Returns `true` if the stored SHA256 passcode is non-empty.
   FutureOr<bool> isAvailablePasscode() async {
-    return await sha256Passcode != '';
+    return _delegate.isAvailablePasscode();
   }
 
   /// Prompts the user to create a new passcode.
@@ -320,7 +287,7 @@ class PasscodeBiometricAuthUI {
 
     if (recievedCode == null) return '';
 
-    _sha256Passcode = recievedCode;
+    _delegate = _delegate.copyWith(sha256Passcode: recievedCode);
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, recievedCode);
     return recievedCode;
   }

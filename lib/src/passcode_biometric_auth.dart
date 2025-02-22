@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,28 @@ import 'package:local_auth/local_auth.dart';
 
 /// A class for handling passcode and biometric authentication.
 class PasscodeBiometricAuth {
+  /// Generates a cryptographically secure random salt encoded in Base64 URL format.
+  ///
+  /// This method attempts to create a secure random number generator. If the secure
+  /// option is unsupported, it gracefully falls back to the default random generator.
+  /// Returns a 16-byte salt as a Base64 URL-safe encoded string.
+  static String generateSalt() {
+    // Attempt to use a secure random generator.
+    Random random;
+    try {
+      random = Random.secure();
+    } on UnsupportedError {
+      // Fallback to a non-secure random generator if secure is unsupported.
+      random = Random();
+    }
+
+    // Generate 16 random bytes (each between 0 and 255).
+    final saltBytes = List<int>.generate(16, (_) => random.nextInt(256));
+
+    // Encode the random bytes in Base64 URL-safe format to form the salt.
+    return base64Url.encode(saltBytes);
+  }
+
   /// Securely hashes a raw passcode by combining it with a salt and then applying SHA256.
   ///
   /// This static method concatenates the provided [code] with the [salt],

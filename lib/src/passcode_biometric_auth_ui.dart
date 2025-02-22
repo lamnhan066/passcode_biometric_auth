@@ -21,6 +21,9 @@ class PasscodeBiometricAuthUI {
   /// Prefix used when storing configuration data.
   final String prefix;
 
+  /// The salt used to enhance the passcode security. (Defaults to an empty string.)
+  final String salt;
+
   /// Determines if the app must force the creation of a passcode when it is missing.
   ///
   /// When true, the app will prompt the user to create a passcode even if biometric
@@ -64,8 +67,13 @@ class PasscodeBiometricAuthUI {
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
-  late PasscodeBiometricAuth _delegate;
   late bool _isUseBiometric;
+  late String _sha256Passcode;
+
+  Future<PasscodeBiometricAuth> get _auth async => PasscodeBiometricAuth(
+        sha256Passcode: await sha256Passcode,
+        salt: salt,
+      );
 
   /// Indicates if biometric authentication is enabled.
   Future<bool> get isUseBiometric async {
@@ -78,7 +86,7 @@ class PasscodeBiometricAuthUI {
   /// The raw passcode is kept secure and only its SHA256 hash is exposed.
   Future<String> get sha256Passcode async {
     return (await onRead?.readString(PrefKeys.sha256PasscodeKey)) ??
-        _delegate.sha256Passcode;
+        _sha256Passcode;
   }
 
   /// Creates a new instance of [PasscodeBiometricAuthUI].
@@ -88,7 +96,7 @@ class PasscodeBiometricAuthUI {
   PasscodeBiometricAuthUI({
     this.prefix = 'PasscodeBiometricAuth',
     String sha256Passcode = '',
-    String salt = '',
+    this.salt = '',
     bool isUseBiometric = false,
     this.forceCreatePasscode = true,
     this.title = 'Passcode',
@@ -105,11 +113,7 @@ class PasscodeBiometricAuthUI {
     this.dialogBuilder,
   }) {
     _isUseBiometric = isUseBiometric;
-
-    _delegate = PasscodeBiometricAuth(
-      sha256Passcode: sha256Passcode,
-      salt: salt,
-    );
+    _sha256Passcode = sha256Passcode;
 
     this.onForgotPasscode = onForgotPasscode == null
         ? null
@@ -182,13 +186,18 @@ class PasscodeBiometricAuthUI {
   /// Checks if biometric authentication is available on this device.
   ///
   /// Note: Biometric support may not be available on all platforms (e.g., web).
-  Future<bool> isBiometricAvailable() => _delegate.isBiometricAvailable();
+  Future<bool> isBiometricAvailable() async {
+    return PasscodeBiometricAuth(
+      sha256Passcode: await sha256Passcode,
+      salt: salt,
+    ).isBiometricAvailable();
+  }
 
   /// Initiates biometric authentication using available device sensors.
   ///
   /// Returns true if the biometric check is successful.
   Future<bool> authenticateWithBiometric() async {
-    return _delegate.isPasscodeAuthenticated(checkConfig.biometricReason);
+    return (await _auth).isPasscodeAuthenticated(checkConfig.biometricReason);
   }
 
   /// Displays the passcode input dialog for authentication.
@@ -235,7 +244,7 @@ class PasscodeBiometricAuthUI {
   ///
   /// Returns true if the computed hash matches the stored passcode hash.
   Future<bool> isPasscodeAuthenticated(String code) async {
-    return _delegate.isPasscodeAuthenticated(code);
+    return (await _auth).isPasscodeAuthenticated(code);
   }
 
   /// Updates the user's preference for biometric authentication.
@@ -256,14 +265,14 @@ class PasscodeBiometricAuthUI {
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
     await onWrite?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
-    _delegate = _delegate.copyWith(sha256Passcode: '');
+    _sha256Passcode = '';
   }
 
   /// Determines if a passcode has already been set.
   ///
   /// Returns true if the stored SHA256 passcode is non-empty.
   FutureOr<bool> isAvailablePasscode() async {
-    return _delegate.isAvailablePasscode();
+    return (await _auth).isAvailablePasscode();
   }
 
   /// Prompts the user to create a new passcode via a dialog.
@@ -280,7 +289,7 @@ class PasscodeBiometricAuthUI {
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: CreatePasscode(
-          salt: _delegate.salt,
+          salt: salt,
           title: title,
           createConfig: createConfig,
           repeatConfig: repeatConfig,
@@ -292,7 +301,7 @@ class PasscodeBiometricAuthUI {
 
     if (recievedCode == null) return '';
 
-    _delegate = _delegate.copyWith(sha256Passcode: recievedCode);
+    _sha256Passcode = recievedCode;
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, recievedCode);
     return recievedCode;
   }

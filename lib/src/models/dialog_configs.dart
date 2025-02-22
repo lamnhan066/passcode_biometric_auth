@@ -1,17 +1,18 @@
+/// Base class representing the configuration for passcode dialogs.
 abstract class DialogConfig {
-  /// Content that showing at the above of the passcode area.
+  /// The main text content shown above the passcode entry area.
   final String content;
 
-  /// Subconent that shown at the below of the passcode area.
+  /// Optional supplementary content displayed below the main text.
   final String? subcontent;
 
-  /// Error text that shown under the passcode field.
+  /// Error message displayed below the passcode field when the passcode is incorrect.
   final String incorrectText;
 
-  /// A button that shown at the end of the dialog.
+  /// Optional button text displayed at the bottom of the dialog.
   final String? buttonText;
 
-  /// Configurations for a dialog.
+  /// Creates a dialog configuration.
   const DialogConfig({
     required this.content,
     this.subcontent,
@@ -20,28 +21,28 @@ abstract class DialogConfig {
   });
 }
 
+/// Configuration for the dialog used when checking an existing passcode.
 class CheckConfig extends DialogConfig {
-  /// Max times to retry when inputting the passcode.
+  /// Maximum allowed number of passcode entry attempts.
   final int maxRetries;
 
-  /// A delay in second when the max number of retries is exceeded. It's also cached in
-  /// local database so the user have to wait even after the app is terminated.
+  /// Delay (in seconds) before allowing retry after maximum attempts have been exceeded.
+  /// This delay is cached in local storage, enforcing the wait even if the app is restarted.
   final int retryInSecond;
 
-  /// `Forget your passcode?` button.
+  /// Text for the "Forgot your passcode?" button.
   final String forgotButtonText;
 
-  /// An error text that shown when the maximum number of retries is exceeded.
+  /// Error message displayed when the maximum number of retries is exceeded.
   final String maxRetriesExceededText;
 
-  /// A checkbox that allows users to use biometric authentication instead of a passcode.
-  /// This checkbox only shows on the supported device using the `local_auth` package.
+  /// Text for a checkbox that offers the option to use biometric authentication.
   final String useBiometricCheckboxText;
 
-  /// A text to display when biometric authentication is requested with the `local_auth` package.
+  /// Message displayed when requesting biometric authentication.
   final String biometricReason;
 
-  /// Configuration for the check dialog.
+  /// Creates a check dialog configuration with optional customizations.
   const CheckConfig({
     this.maxRetries = 5,
     this.retryInSecond = 300,
@@ -59,8 +60,9 @@ class CheckConfig extends DialogConfig {
   });
 }
 
+/// Configuration for the dialog used when creating a new passcode.
 class CreateConfig extends DialogConfig {
-  /// Configuration for the create dialog.
+  /// Creates a dialog configuration for creating a new passcode.
   const CreateConfig({
     super.content = 'Create Passcode',
     super.subcontent,
@@ -68,8 +70,9 @@ class CreateConfig extends DialogConfig {
   }) : super(incorrectText: '');
 }
 
+/// Configuration for the dialog used when repeating an existing passcode.
 class RepeatConfig extends DialogConfig {
-  /// Configuration for the repeat dialog.
+  /// Creates a dialog configuration for repeating the passcode entry.
   const RepeatConfig({
     super.content = 'Repeat Passcode',
     super.subcontent,

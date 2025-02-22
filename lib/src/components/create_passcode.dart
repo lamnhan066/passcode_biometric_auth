@@ -1,3 +1,8 @@
+/// A stateless widget that creates a passcode by allowing the user to input a numeric code.
+/// After input is complete, it prompts the user to repeat the passcode for confirmation.
+/// If confirmed, it returns the passcode hashed using SHA-256.
+library;
+
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -9,6 +14,18 @@ import 'package:pinput/pinput.dart';
 import 'repeat_passcode.dart';
 
 class CreatePasscode extends StatelessWidget {
+  /// Constructs a CreatePasscode widget.
+  ///
+  /// [title] is the dialog title.
+  ///
+  /// [createConfig] holds configuration for the passcode creation properties such as content,
+  /// optional subcontent, and button text.
+  ///
+  /// [repeatConfig] holds configuration for the dialog used to repeat the passcode.
+  ///
+  /// [hapticFeedbackType] specifies the type of haptic feedback that should be used.
+  ///
+  /// [dialogBuilder] is an optional function to customize dialog appearance.
   const CreatePasscode({
     super.key,
     required this.title,
@@ -27,8 +44,11 @@ class CreatePasscode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void onCompleted(code) async {
-      final c = await animatedDialog<bool>(
+    // Callback executed when the passcode input is completed.
+    // It prompts the user to repeat the passcode for confirmation.
+    // If the confirmation is successful, it hashes the passcode using SHA-256 and returns it.
+    void onCompleted(String code) async {
+      final confirmed = await animatedDialog<bool>(
         context: context,
         blurSigma: 0,
         builder: (_) => RepeatPasscode(
@@ -40,13 +60,16 @@ class CreatePasscode extends StatelessWidget {
         ),
       );
 
-      if (c == true && context.mounted) {
+      // If passcode confirmation succeeded and the widget is still in the widget tree,
+      // calculate SHA-256 hash and close the current dialog passing the hash.
+      if (confirmed == true && context.mounted) {
         final passcodeSHA256 =
             base64Encode(sha256.convert(utf8.encode(code)).bytes);
         Navigator.pop(context, passcodeSHA256);
       }
     }
 
+    // Widget containing the content of the passcode creation dialog.
     final widgetContent = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -55,10 +78,13 @@ class CreatePasscode extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Display the main instruction for creating the passcode.
           Text(createConfig.content, style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.all(8),
+            // Pinput widget for entering the passcode. Haptic feedback and secure text
+            // (obscured) are enabled.
             child: Pinput(
               length: 6,
               autofocus: true,
@@ -68,6 +94,7 @@ class CreatePasscode extends StatelessWidget {
               onCompleted: onCompleted,
             ),
           ),
+          // Optionally display additional instructions if provided.
           if (createConfig.subcontent != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -81,17 +108,20 @@ class CreatePasscode extends StatelessWidget {
       ),
     );
 
+    // Define optional actions (buttons) for the dialog.
     final buttons = createConfig.buttonText == null
         ? null
         : [
             ElevatedButton(
               onPressed: () {
+                // Close the dialog without passing any passcode.
                 Navigator.pop(context);
               },
               child: Text(createConfig.buttonText!),
             ),
           ];
 
+    // Build the dialog using a custom dialog builder if provided, or default to an AlertDialog.
     return dialogBuilder?.call(context, title, widgetContent, buttons) ??
         AlertDialog(
           title: Text(title),

@@ -155,7 +155,7 @@ class PasscodeBiometricAuthUI {
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
-      return code != '';
+      return code.isNotEmpty;
     } else {
       // Fallback to passcode authentication.
       if (!context.mounted) return false;
@@ -174,12 +174,12 @@ class PasscodeBiometricAuthUI {
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
-      return code != '';
+      return code.isNotEmpty;
     } else {
       if (!context.mounted) return false;
       final isAuthenticated = await authenticateWithPasscode(context);
       if (!isAuthenticated || !context.mounted) return false;
-      return (await _createPasscode(context)) != '';
+      return (await _createPasscode(context)).isNotEmpty;
     }
   }
 

@@ -18,6 +18,7 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
   /// Other parameters customize the UI behavior and passcode configuration.
   PasscodeBiometricAuthUICached({
     super.prefix,
+    super.salt,
     super.forceCreatePasscode,
     super.title,
     super.checkConfig,

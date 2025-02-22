@@ -77,7 +77,7 @@ class PasscodeBiometricAuthUI {
 
   /// Indicates if biometric authentication is enabled.
   Future<bool> get isUseBiometric async {
-    return (await onRead?.readBool(PrefKeys.isUseBiometricKey)) ??
+    return (await onRead?.readBool(_createKey(PrefKeys.isUseBiometricKey))) ??
         _isUseBiometric;
   }
 
@@ -85,7 +85,7 @@ class PasscodeBiometricAuthUI {
   ///
   /// The raw passcode is kept secure and only its SHA256 hash is exposed.
   Future<String> get sha256Passcode async {
-    return (await onRead?.readString(PrefKeys.sha256PasscodeKey)) ??
+    return (await onRead?.readString(_createKey(PrefKeys.sha256PasscodeKey))) ??
         _sha256Passcode;
   }
 
@@ -250,7 +250,7 @@ class PasscodeBiometricAuthUI {
   /// The new setting is saved using the [onWrite] callback and updates the local state.
   @mustCallSuper
   Future<void> useBiometric(bool isUse) async {
-    await onWrite?.writeBool(PrefKeys.isUseBiometricKey, isUse);
+    await onWrite?.writeBool(_createKey(PrefKeys.isUseBiometricKey), isUse);
     _isUseBiometric = isUse;
   }
 
@@ -260,9 +260,10 @@ class PasscodeBiometricAuthUI {
   /// and clears any retry attempt counters.
   @mustCallSuper
   Future<void> removePasscode() async {
-    await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
-    await onWrite?.writeBool(PrefKeys.isUseBiometricKey, false);
-    await onWrite?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
+    await onWrite?.writeString(_createKey(PrefKeys.sha256PasscodeKey), '');
+    await onWrite?.writeBool(_createKey(PrefKeys.isUseBiometricKey), false);
+    await onWrite?.writeInt(
+        _createKey(PrefKeys.lastRetriesExceededRemainingSecond), 0);
     _sha256Passcode = '';
   }
 
@@ -300,7 +301,12 @@ class PasscodeBiometricAuthUI {
     if (recievedCode == null) return '';
 
     _sha256Passcode = recievedCode;
-    await onWrite?.writeString(PrefKeys.sha256PasscodeKey, recievedCode);
+    await onWrite?.writeString(
+        _createKey(PrefKeys.sha256PasscodeKey), recievedCode);
     return recievedCode;
+  }
+
+  String _createKey(String subKey) {
+    return '$prefix.$subKey';
   }
 }

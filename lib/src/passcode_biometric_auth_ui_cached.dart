@@ -43,17 +43,17 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
         readBool: (String key) async {
           // Retrieves a boolean value associated with the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          return prefs.getBool('$prefix.$key') ?? false;
+          return prefs.getBool(key) ?? false;
         },
         readString: (String key) async {
           // Retrieves a string value associated with the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          return prefs.getString('$prefix.$key');
+          return prefs.getString(key);
         },
         readInt: (String key) async {
           // Retrieves an integer value associated with the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          return prefs.getInt('$prefix.$key');
+          return prefs.getInt(key);
         },
       );
 
@@ -65,17 +65,17 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
         writeBool: (String key, bool value) async {
           // Persists a boolean value using the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('$prefix.$key', value);
+          await prefs.setBool(key, value);
         },
         writeString: (String key, String value) async {
           // Persists a string value using the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('$prefix.$key', value);
+          await prefs.setString(key, value);
         },
         writeInt: (String key, int value) async {
           // Persists an integer value using the namespaced key.
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('$prefix.$key', value);
+          await prefs.setInt(key, value);
         },
       );
 }

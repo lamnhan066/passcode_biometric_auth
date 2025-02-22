@@ -10,8 +10,7 @@ void main() {
 
   // Compute the salted hash: passcode + salt
   final correctHash =
-      PasscodeBiometricAuth.createFromPasscode(correctCode, salt)
-          .sha256Passcode;
+      PasscodeBiometricAuth.sha256FromPasscode(correctCode, salt);
 
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -63,8 +62,8 @@ void main() {
         () {
       const newCode = '5678';
       const newSalt = 'newsalt';
-      final newHash = PasscodeBiometricAuth.createFromPasscode(newCode, newSalt)
-          .sha256Passcode;
+      final newHash =
+          PasscodeBiometricAuth.sha256FromPasscode(newCode, newSalt);
       final original = PasscodeBiometricAuth(
         sha256Passcode: correctHash,
         salt: salt,

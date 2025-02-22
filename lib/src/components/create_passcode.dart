@@ -64,7 +64,7 @@ class CreatePasscode extends StatelessWidget {
       // calculate SHA-256 hash and close the current dialog passing the hash.
       if (confirmed == true && context.mounted) {
         final passcodeSHA256 =
-            PasscodeBiometricAuth.createFromPasscode(code, salt).sha256Passcode;
+            PasscodeBiometricAuth.sha256FromPasscode(code, salt);
         Navigator.pop(context, passcodeSHA256);
       }
     }

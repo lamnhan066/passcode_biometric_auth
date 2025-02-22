@@ -86,9 +86,10 @@ class _CheckPasscodeState extends State<CheckPasscode> {
     if (widget.onMaxRetriesExceeded != null) {
       widget.onMaxRetriesExceeded!();
     }
-    timer = Timer.periodic(const Duration(milliseconds: 100), (timer) async {
+    timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       second -= 100;
       if (second <= 0) {
+        timer.cancel();
         setState(() {
           _retryCounter = 0;
           error = null;
@@ -96,7 +97,6 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         Future.delayed(const Duration(milliseconds: 500)).then((value) {
           if (mounted) FocusScope.of(context).requestFocus(focusNode);
         });
-        timer.cancel();
         widget.onWrite
             ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
         return;
@@ -208,20 +208,20 @@ class _CheckPasscodeState extends State<CheckPasscode> {
                         Checkbox(
                           value: isBiometricChecked,
                           onChanged: (value) async {
-                            if (value != null) {
-                              if (value == true) {
-                                if (await widget.localAuth
-                                        .authenticateWithBiometric() ==
-                                    true) {
-                                  setState(() {
-                                    isBiometricChecked = true;
-                                  });
-                                }
-                              } else {
+                            if (value == null) return;
+
+                            if (value == true) {
+                              final authenticated = await widget.localAuth
+                                  .authenticateWithBiometric();
+                              if (authenticated == true) {
                                 setState(() {
-                                  isBiometricChecked = false;
+                                  isBiometricChecked = true;
                                 });
                               }
+                            } else {
+                              setState(() {
+                                isBiometricChecked = false;
+                              });
                             }
                           },
                         ),

@@ -3,11 +3,9 @@
 /// If confirmed, it returns the passcode hashed using SHA-256.
 library;
 
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
+import 'package:passcode_biometric_auth/src/passcode_biometric_auth.dart';
 import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
 
@@ -28,6 +26,7 @@ class CreatePasscode extends StatelessWidget {
   /// [dialogBuilder] is an optional function to customize dialog appearance.
   const CreatePasscode({
     super.key,
+    required this.salt,
     required this.title,
     required this.createConfig,
     required this.repeatConfig,
@@ -35,6 +34,7 @@ class CreatePasscode extends StatelessWidget {
     required this.dialogBuilder,
   });
 
+  final String salt;
   final String title;
   final CreateConfig createConfig;
   final RepeatConfig repeatConfig;
@@ -64,7 +64,7 @@ class CreatePasscode extends StatelessWidget {
       // calculate SHA-256 hash and close the current dialog passing the hash.
       if (confirmed == true && context.mounted) {
         final passcodeSHA256 =
-            base64Encode(sha256.convert(utf8.encode(code)).bytes);
+            PasscodeBiometricAuth.encode(code, salt).sha256Passcode;
         Navigator.pop(context, passcodeSHA256);
       }
     }

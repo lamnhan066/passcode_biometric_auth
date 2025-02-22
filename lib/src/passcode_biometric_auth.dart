@@ -36,28 +36,38 @@ class PasscodeBiometricAuth {
   ///
   /// Returns true if biometrics are available, false otherwise.
   Future<bool> isBiometricAvailable() async {
-    // Return cached value if it exists.
+    // Return previously cached result to prevent redundant checks.
     if (_isBiometricAvailableCached != null) {
       return _isBiometricAvailableCached!;
     }
 
-    // Biometrics are not supported on web.
+    // Biometrics are not available on web platforms.
     if (kIsWeb) {
       _isBiometricAvailableCached = false;
       return false;
     }
 
-    var localAuth = LocalAuthentication();
-    // Check if the device supports biometrics.
-    final isDeviceSupported = await localAuth.isDeviceSupported();
-    if (!isDeviceSupported) {
+    try {
+      // Initialize the LocalAuthentication instance.
+      var localAuth = LocalAuthentication();
+
+      // Verify if the device supports biometric hardware.
+      final isDeviceSupported = await localAuth.isDeviceSupported();
+      if (!isDeviceSupported) {
+        _isBiometricAvailableCached = false;
+        return false;
+      }
+
+      // Check if biometrics can be enrolled and verified on the device.
+      _isBiometricAvailableCached = await localAuth.canCheckBiometrics;
+
+      // Return the (cached) result indicating biometric availability.
+      return _isBiometricAvailableCached!;
+    } catch (_) {
+      // On error, default to biometrics being unavailable.
       _isBiometricAvailableCached = false;
       return false;
     }
-
-    // Cache and return the result of whether any biometrics can be checked.
-    _isBiometricAvailableCached = await localAuth.canCheckBiometrics;
-    return _isBiometricAvailableCached!;
   }
 
   /// Authenticates the user using biometric authentication.

@@ -92,17 +92,11 @@ class CreatePasscode extends StatelessWidget {
             ),
           ];
 
-    Widget child;
-    if (dialogBuilder != null) {
-      child = dialogBuilder!(context, title, widgetContent, buttons);
-    } else {
-      child = AlertDialog(
-        title: Text(title),
-        content: widgetContent,
-        actions: buttons,
-      );
-    }
-
-    return child;
+    return dialogBuilder?.call(context, title, widgetContent, buttons) ??
+        AlertDialog(
+          title: Text(title),
+          content: widgetContent,
+          actions: buttons,
+        );
   }
 }

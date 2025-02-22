@@ -135,8 +135,8 @@ class PasscodeBiometricAuth {
   /// and compares the result with the stored hash.
   /// Returns true if they match.
   bool isPasscodeAuthenticated(String code) {
-    final passcodeSHA256 = sha256FromPasscode(code, salt);
-    return passcodeSHA256 == this;
+    final sha256 = sha256FromPasscode(code, salt);
+    return sha256 == sha256Passcode;
   }
 
   /// Checks if a passcode is set.

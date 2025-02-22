@@ -67,7 +67,7 @@ class PasscodeBiometricAuthUI {
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
-  late bool _isUseBiometric;
+  bool _isUseBiometric;
   late String _sha256Passcode;
 
   Future<PasscodeBiometricAuth> get _auth async => PasscodeBiometricAuth(
@@ -111,10 +111,8 @@ class PasscodeBiometricAuthUI {
     this.onWrite,
     this.hapticFeedbackType = HapticFeedbackType.lightImpact,
     this.dialogBuilder,
-  }) {
-    _isUseBiometric = isUseBiometric;
-    _sha256Passcode = sha256Passcode;
-
+  })  : _isUseBiometric = isUseBiometric,
+        _sha256Passcode = sha256Passcode {
     this.onForgotPasscode = onForgotPasscode == null
         ? null
         : (context) async {

@@ -276,6 +276,7 @@ class PasscodeBiometricAuthUI {
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: CreatePasscode(
+          salt: _delegate.salt,
           title: title,
           createConfig: createConfig,
           repeatConfig: repeatConfig,

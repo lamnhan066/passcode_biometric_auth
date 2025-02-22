@@ -49,12 +49,12 @@ class CheckConfig extends DialogConfig {
     super.content = 'Input Passcode',
     super.subcontent,
     super.incorrectText =
-        'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-            'You have to wait for @{retryInSecond}s to try again when the max number of retries is exceeded',
+        'This passcode is incorrect (max: @{counter}/@{maxRetries} times).\n'
+            'Please wait for @{retryInSecond}s before trying again after reaching the maximum retries.',
     this.forgotButtonText = 'Forgot your passcode?',
     this.useBiometricCheckboxText = 'Use biometric authentication',
     this.maxRetriesExceededText =
-        'The max number of retries is exceeded\nPlease try again in @{second}s',
+        'Maximum retries exceeded.\nTry again in @{second}s.',
     this.biometricReason = 'Please authenticate to use this feature',
     super.buttonText,
   });

@@ -4,12 +4,19 @@ import 'models/on_read.dart';
 import 'models/on_write.dart';
 import 'passcode_biometric_auth_ui.dart';
 
+/// A variant of [PasscodeBiometricAuthUI] that automatically caches configuration
+/// values using SharedPreferences.
+///
+/// This implementation provides built-in implementations for [onRead] and
+/// [onWrite] to persist configuration data as booleans, strings, and integers.
+/// For more secure storage, use [PasscodeBiometricAuthUI] without caching.
 class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
-  /// This is the same as [PasscodeBiometricAuthUI] but with built-in [onRead]
-  /// and [onWrite] using `SharedPreferences`.
+  /// Creates a [PasscodeBiometricAuthUICached] instance.
   ///
-  /// If you want to use a more secure way to cache the data then you need to
-  /// use [PasscodeBiometricAuthUI].
+  /// The [prefix] parameter is used as a key prefix for all stored values.
+  ///
+  /// Other parameters configure the behavior and appearance of the UI and
+  /// passcode configuration.
   PasscodeBiometricAuthUICached({
     super.prefix,
     super.forceCreatePasscode,
@@ -28,29 +35,45 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
           onWrite: _onWrite(prefix),
         );
 
-  static OnRead _onRead(String prefix) => OnRead(readBool: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getBool('$prefix.$key') ?? false;
-      }, readString: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getString('$prefix.$key');
-      }, readInt: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getInt('$prefix.$key');
-      });
+  /// Returns an [OnRead] instance that reads cached values from SharedPreferences.
+  ///
+  /// The [prefix] is prepended to every key to avoid collisions.
+  static OnRead _onRead(String prefix) => OnRead(
+        readBool: (String key) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Retrieve a boolean value associated with the combined key.
+          return prefs.getBool('$prefix.$key') ?? false;
+        },
+        readString: (String key) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Retrieve a string value associated with the combined key.
+          return prefs.getString('$prefix.$key');
+        },
+        readInt: (String key) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Retrieve an integer value associated with the combined key.
+          return prefs.getInt('$prefix.$key');
+        },
+      );
 
+  /// Returns an [OnWrite] instance that writes values to SharedPreferences.
+  ///
+  /// The [prefix] is prepended to every key to avoid collisions.
   static OnWrite _onWrite(String prefix) => OnWrite(
         writeBool: (String key, bool value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setBool('$prefix.$key', value);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Persist a boolean value using a combined key.
+          await prefs.setBool('$prefix.$key', value);
         },
         writeString: (String key, String value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setString('$prefix.$key', value);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Persist a string value using a combined key.
+          await prefs.setString('$prefix.$key', value);
         },
         writeInt: (String key, int value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setInt('$prefix.$key', value);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          // Persist an integer value using a combined key.
+          await prefs.setInt('$prefix.$key', value);
         },
       );
 }

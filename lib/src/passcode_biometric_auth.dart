@@ -22,7 +22,7 @@ class PasscodeBiometricAuth {
     }
 
     final saltBytes = List<int>.generate(16, (_) => random.nextInt(256));
-    return base64Url.encode(saltBytes);
+    return base64Encode(saltBytes);
   }
 
   /// Combines a passcode and salt, hashes them with SHA256, and encodes in Base64 URL format.
@@ -37,10 +37,7 @@ class PasscodeBiometricAuth {
     final bytes = utf8.encode(combined);
     final hash = sha256.convert(bytes);
 
-    return PasscodeBiometricAuth(
-      sha256Passcode: base64UrlEncode(hash.bytes),
-      salt: salt,
-    ).sha256Passcode;
+    return base64Encode(hash.bytes);
   }
 
   /// Returns the stored SHA256 hashed passcode (in Base64 encoding).

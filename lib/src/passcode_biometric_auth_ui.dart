@@ -224,7 +224,7 @@ class PasscodeBiometricAuthUI {
     if (state == null) return false;
 
     // Update biometric usage preference after authentication.
-    useBiometric(state.isUseBiometric);
+    await useBiometric(state.isUseBiometric);
     return state.isAuthenticated == true;
   }
 

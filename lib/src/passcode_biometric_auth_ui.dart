@@ -13,76 +13,78 @@ import 'utils/pref_keys.dart';
 
 /// UI handler for passcode and biometric authentication dialogs.
 ///
-/// Provides methods to authenticate using biometrics, passcode or both,
-/// and to create, change, or remove the passcode. It manages saving and
-/// reading configuration using the provided [onRead] and [onWrite] callbacks.
+/// Manages displaying dialogs for passcode and biometric authentication,
+/// and handles configuration persistence via provided [onRead] and [onWrite]
+/// callbacks. It supports operations such as authenticating, creating a new
+/// passcode, changing an existing passcode, and removing a passcode.
 class PasscodeBiometricAuthUI {
-  /// Prefix used when saving to the local database via [OnRead] and [OnWrite] methods.
+  /// Prefix used when storing configuration data.
   final String prefix;
 
-  /// Whether to force the creation of a passcode when it is not available.
+  /// Determines if the app must force the creation of a passcode when it is missing.
   ///
-  /// If `true`, the app will prompt the user to create a passcode even if the
-  /// biometric authentication is available.
+  /// When true, the app will prompt the user to create a passcode even if biometric
+  /// authentication is available.
   final bool forceCreatePasscode;
 
-  /// Title used for all dialogs.
+  /// Title displayed across all dialogs.
   final String title;
 
-  /// Configuration options for the passcode check dialog.
+  /// Configuration options for the passcode validation dialog.
   final CheckConfig checkConfig;
 
-  /// Configuration options for creating a passcode.
+  /// Configuration options for creating a new passcode.
   final CreateConfig createConfig;
 
-  /// Configuration options for the repeat passcode dialog.
+  /// Configuration options for confirming the newly created passcode.
   final RepeatConfig repeatConfig;
 
-  /// Blur sigma value used for the background when showing dialogs.
+  /// Blur intensity for the background when dialogs are shown.
   final double blurSigma;
 
-  /// Callback triggered when the "forgot your passcode" option is selected.
+  /// Callback invoked when "forgot your passcode" is selected.
   ///
-  /// This callback usually prompts the user with cautions to confirm passcode reset.
-  /// If it returns `true`, the passcode will be removed.
+  /// Should prompt the user to confirm passcode reset. If the callback returns true,
+  /// the passcode is removed.
   late final Future<bool> Function(BuildContext context)? onForgotPasscode;
 
-  /// Callback triggered when the maximum number of retries is exceeded.
+  /// Callback executed when the maximum retry attempt threshold is exceeded.
   final void Function()? onMaxRetriesExceeded;
 
-  /// Callback for reading configurations from the local storage.
+  /// Callback to read saved configuration from local storage.
   final OnRead? onRead;
 
-  /// Callback for writing configurations to the local storage.
+  /// Callback to write configuration to local storage.
   final OnWrite? onWrite;
 
-  /// Type of haptic feedback used when the user interacts with the UI.
+  /// Type of haptic feedback for UI interactions.
   final HapticFeedbackType hapticFeedbackType;
 
-  /// Builder for custom dialog widget.
+  /// Custom builder for dialog widgets.
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
   late PasscodeBiometricAuth _delegate;
   late bool _isUseBiometric;
 
-  /// Retrieves whether biometric authentication is enabled.
+  /// Indicates if biometric authentication is enabled.
   Future<bool> get isUseBiometric async {
     return (await onRead?.readBool(PrefKeys.isUseBiometricKey)) ??
         _isUseBiometric;
   }
 
-  /// Retrieves the current passcode in SHA256 format.
+  /// Retrieves the current passcode in SHA256 hash format.
   ///
-  /// The raw passcode is not accessible; only its SHA256 hash.
+  /// The raw passcode is kept secure and only its SHA256 hash is exposed.
   Future<String> get sha256Passcode async {
     return (await onRead?.readString(PrefKeys.sha256PasscodeKey)) ??
         _delegate.sha256Passcode;
   }
 
-  /// Creates an instance of [PasscodeBiometricAuthUI].
+  /// Creates a new instance of [PasscodeBiometricAuthUI].
   ///
-  /// The [onForgotPasscode] callback is modified to remove the passcode if it returns `true`.
+  /// If [onForgotPasscode] is supplied, it is wrapped to remove the passcode upon
+  /// confirmation of a reset.
   PasscodeBiometricAuthUI({
     this.prefix = 'PasscodeBiometricAuth',
     String sha256Passcode = '',
@@ -120,11 +122,12 @@ class PasscodeBiometricAuthUI {
           };
   }
 
-  /// Authenticates the user using both passcode and biometric methods.
+  /// Authenticates the user with biometric and/or passcode verification.
   ///
-  /// Depending on the configurations and availability, it will either authenticate
-  /// with biometric first then fallback to passcode, or prompt to create a new passcode.
-  /// Returns `true` if authentication is successful.
+  /// Depending on [forceCreatePasscode] and the availability of a passcode,
+  /// it will either prompt for biometric authentication, request passcode input,
+  /// or trigger creation of a new passcode.
+  /// Returns true if the user is successfully authenticated.
   Future<bool> authenticate(
     BuildContext context, {
     bool? forceCreatePasscode,
@@ -137,31 +140,31 @@ class PasscodeBiometricAuthUI {
     final isPasscodeAvailable = await isAvailablePasscode();
     final isNeedCreatePasscode = forceCreatePasscode && !isPasscodeAvailable;
 
-    // Attempt biometric authentication if applicable.
+    // Attempt biometric authentication if passcode exists and biometric is enabled.
     if (!isNeedCreatePasscode && isUseBiometric) {
       authenticated = await authenticateWithBiometric();
     }
 
     if (authenticated == true) return true;
 
-    // If passcode is not available, prompt to create one.
+    // Prompt user to create a new passcode if none exists.
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
       return code != '';
     } else {
-      // Use passcode authentication.
+      // Fallback to passcode authentication.
       if (!context.mounted) return false;
       final isAuthenticated = await authenticateWithPasscode(context);
       return isAuthenticated == true;
     }
   }
 
-  /// Changes the current passcode.
+  /// Allows the user to change the current passcode.
   ///
-  /// If a passcode is not present, it prompts the user to create one instead.
-  /// If it is available, it will ask the user to authenticate with the current passcode
-  /// before setting a new one.
+  /// If no passcode exists, it will trigger passcode creation.
+  /// Otherwise, it first validates the current passcode before prompting
+  /// for a new passcode.
   Future<bool> changePasscode(BuildContext context) async {
     final isPasscodeAvailable = await isAvailablePasscode();
     if (!isPasscodeAvailable) {
@@ -176,23 +179,23 @@ class PasscodeBiometricAuthUI {
     }
   }
 
-  /// Checks if biometric authentication is available on the device.
+  /// Checks if biometric authentication is available on this device.
   ///
-  /// Results are cached for faster subsequent checks. Note: Biometric support
-  /// is not available on web.
+  /// Note: Biometric support may not be available on all platforms (e.g., web).
   Future<bool> isBiometricAvailable() => _delegate.isBiometricAvailable();
 
-  /// Initiates biometric authentication.
+  /// Initiates biometric authentication using available device sensors.
   ///
-  /// Returns `true` if the user is successfully authenticated with biometrics.
+  /// Returns true if the biometric check is successful.
   Future<bool> authenticateWithBiometric() async {
     return _delegate.isPasscodeAuthenticated(checkConfig.biometricReason);
   }
 
-  /// Initiates passcode authentication by displaying the passcode check dialog.
+  /// Displays the passcode input dialog for authentication.
   ///
-  /// Reads the stored SHA256-computed passcode and uses it to validate the user input.
-  /// Returns `true` if the user is authenticated.
+  /// It retrieves the stored SHA256 passcode and validates the user input. After
+  /// successful validation, it updates the biometric preference setting.
+  /// Returns true if the passcode is correctly authenticated.
   Future<bool> authenticateWithPasscode(BuildContext context) async {
     final code = await sha256Passcode;
     if (!context.mounted) return false;
@@ -223,31 +226,31 @@ class PasscodeBiometricAuthUI {
 
     if (state == null) return false;
 
-    // Update biometric usage preference after authentication.
+    // Persist the new biometric usage preference after authentication.
     await useBiometric(state.isUseBiometric);
     return state.isAuthenticated == true;
   }
 
-  /// Validates whether the provided [code] is correct.
+  /// Validates the provided passcode by comparing its SHA256 hash.
   ///
-  /// The passcode is compared using a SHA256 hash. Returns `true` if the
-  /// computed hash matches the stored one.
+  /// Returns true if the computed hash matches the stored passcode hash.
   Future<bool> isPasscodeAuthenticated(String code) async {
     return _delegate.isPasscodeAuthenticated(code);
   }
 
-  /// Updates the preference to use biometric authentication.
+  /// Updates the user's preference for biometric authentication.
   ///
-  /// Persists the new value using [onWrite] and updates the local variable.
+  /// The new setting is saved using the [onWrite] callback and updates the local state.
   @mustCallSuper
   Future<void> useBiometric(bool isUse) async {
     await onWrite?.writeBool(PrefKeys.isUseBiometricKey, isUse);
     _isUseBiometric = isUse;
   }
 
-  /// Removes the stored passcode and resets related authentication configurations.
+  /// Removes the stored passcode and related authentication configurations.
   ///
-  /// This includes clearing biometric preference and any record of retry attempts.
+  /// This method clears the passcode hash, resets biometric usage preference,
+  /// and clears any retry attempt counters.
   @mustCallSuper
   Future<void> removePasscode() async {
     await onWrite?.writeString(PrefKeys.sha256PasscodeKey, '');
@@ -256,17 +259,18 @@ class PasscodeBiometricAuthUI {
     _delegate = _delegate.copyWith(sha256Passcode: '');
   }
 
-  /// Checks if a passcode is already set.
+  /// Determines if a passcode has already been set.
   ///
-  /// Returns `true` if the stored SHA256 passcode is non-empty.
+  /// Returns true if the stored SHA256 passcode is non-empty.
   FutureOr<bool> isAvailablePasscode() async {
     return _delegate.isAvailablePasscode();
   }
 
-  /// Prompts the user to create a new passcode.
+  /// Prompts the user to create a new passcode via a dialog.
   ///
-  /// Displays the create passcode dialog with a blurred background. Upon successful
-  /// creation, stores the SHA256 hash of the passcode.
+  /// Displays a blurred background and the passcode creation dialog. After the user
+  /// successfully creates a passcode, it stores the passcode's SHA256 hash.
+  /// Returns the SHA256 hash of the created passcode, or an empty string on failure.
   Future<String> _createPasscode(BuildContext context) async {
     if (!context.mounted) return '';
 

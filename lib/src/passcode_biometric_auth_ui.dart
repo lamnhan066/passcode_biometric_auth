@@ -318,12 +318,10 @@ class PasscodeBiometricAuthUI {
       ),
     );
 
-    if (recievedCode != null) {
-      _sha256Passcode = recievedCode;
-      await onWrite?.writeString(PrefKeys.sha256PasscodeKey, recievedCode);
-      return recievedCode;
-    } else {
-      return '';
-    }
+    if (recievedCode == null) return '';
+
+    _sha256Passcode = recievedCode;
+    await onWrite?.writeString(PrefKeys.sha256PasscodeKey, recievedCode);
+    return recievedCode;
   }
 }

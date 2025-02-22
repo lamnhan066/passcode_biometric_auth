@@ -32,7 +32,7 @@ class PasscodeBiometricAuth {
   /// - [code]: The user-provided passcode.
   /// - [salt]: A string used to augment security.
   /// Returns a new instance with the hashed passcode and salt.
-  static PasscodeBiometricAuth encode(String code, String salt) {
+  static PasscodeBiometricAuth createFromPasscode(String code, String salt) {
     final combined = code + salt;
     final bytes = utf8.encode(combined);
     final hash = sha256.convert(bytes);
@@ -135,7 +135,7 @@ class PasscodeBiometricAuth {
   /// and compares the result with the stored hash.
   /// Returns true if they match.
   bool isPasscodeAuthenticated(String code) {
-    final passcodeSHA256 = encode(code, salt);
+    final passcodeSHA256 = createFromPasscode(code, salt);
     return passcodeSHA256 == this;
   }
 

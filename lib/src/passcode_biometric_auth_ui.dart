@@ -153,7 +153,7 @@ class PasscodeBiometricAuthUI {
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
-      return code.isNotEmpty;
+      return code;
     } else {
       // Fallback to passcode authentication.
       if (!context.mounted) return false;
@@ -172,12 +172,12 @@ class PasscodeBiometricAuthUI {
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
       final code = await _createPasscode(context);
-      return code.isNotEmpty;
+      return code;
     } else {
       if (!context.mounted) return false;
       final isAuthenticated = await authenticateWithPasscode(context);
       if (!isAuthenticated || !context.mounted) return false;
-      return (await _createPasscode(context)).isNotEmpty;
+      return (await _createPasscode(context));
     }
   }
 
@@ -263,7 +263,9 @@ class PasscodeBiometricAuthUI {
     await onWrite?.writeString(_createKey(PrefKeys.sha256PasscodeKey), '');
     await onWrite?.writeBool(_createKey(PrefKeys.isUseBiometricKey), false);
     await onWrite?.writeInt(
-        _createKey(PrefKeys.lastRetriesExceededRemainingSecond), 0);
+      _createKey(PrefKeys.lastRetriesExceededRemainingSecond),
+      0,
+    );
     _sha256Passcode = '';
   }
 
@@ -279,8 +281,8 @@ class PasscodeBiometricAuthUI {
   /// Displays a blurred background and the passcode creation dialog. After the user
   /// successfully creates a passcode, it stores the passcode's SHA256 hash.
   /// Returns the SHA256 hash of the created passcode, or an empty string on failure.
-  Future<String> _createPasscode(BuildContext context) async {
-    if (!context.mounted) return '';
+  Future<bool> _createPasscode(BuildContext context) async {
+    if (!context.mounted) return false;
 
     final recievedCode = await animatedDialog(
       context: context,
@@ -298,12 +300,15 @@ class PasscodeBiometricAuthUI {
       ),
     );
 
-    if (recievedCode == null) return '';
+    if (recievedCode == null) return false;
 
     _sha256Passcode = recievedCode;
     await onWrite?.writeString(
-        _createKey(PrefKeys.sha256PasscodeKey), recievedCode);
-    return recievedCode;
+      _createKey(PrefKeys.sha256PasscodeKey),
+      recievedCode,
+    );
+
+    return true;
   }
 
   String _createKey(String subKey) {

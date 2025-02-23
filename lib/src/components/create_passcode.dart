@@ -1,6 +1,5 @@
-/// A stateless widget that creates a passcode by allowing the user to input a numeric code.
-/// After input is complete, it prompts the user to repeat the passcode for confirmation.
-/// If confirmed, it returns the passcode hashed using SHA-256.
+/// A stateless widget that requests passcode creation and confirmation, then
+/// returns the passcode hashed with SHA-256 and a provided salt.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,18 +8,14 @@ import 'package:passcode_biometric_auth/src/passcode_biometric_auth.dart';
 import 'package:pinput/pinput.dart';
 
 class CreatePasscode extends StatelessWidget {
-  /// Constructs a CreatePasscode widget.
+  /// Constructs a widget to create and confirm a passcode.
   ///
-  /// [title] is the dialog title.
-  ///
-  /// [createConfig] holds configuration for the passcode creation properties such as content,
-  /// optional subcontent, and button text.
-  ///
-  /// [repeatConfig] holds configuration for the dialog used to repeat the passcode.
-  ///
-  /// [hapticFeedbackType] specifies the type of haptic feedback that should be used.
-  ///
-  /// [dialogBuilder] is an optional function to customize dialog appearance.
+  /// The [salt] is used when hashing the passcode.
+  /// [title] is displayed at the top of the dialog.
+  /// [createConfig] manages text/content for passcode creation.
+  /// [repeatConfig] manages content for the confirmation dialog.
+  /// [hapticFeedbackType] configures vibration feedback on passcode input.
+  /// If [dialogBuilder] is provided, it replaces the default dialog UI.
   const CreatePasscode({
     super.key,
     required this.salt,
@@ -31,19 +26,34 @@ class CreatePasscode extends StatelessWidget {
     required this.dialogBuilder,
   });
 
+  /// Salt appended to the passcode before hashing.
   final String salt;
+
+  /// Dialog title displayed during passcode creation.
   final String title;
+
+  /// Configuration for the passcode creation dialog text.
   final CreateConfig createConfig;
+
+  /// Configuration for the dialog used when repeating the passcode.
   final RepeatConfig repeatConfig;
+
+  /// Sets the type of haptic feedback for the passcode input.
   final HapticFeedbackType hapticFeedbackType;
-  final Widget Function(BuildContext context, String title, Widget content,
-      List<Widget>? buttons)? dialogBuilder;
+
+  /// Overrides the default dialog design if provided.
+  final Widget Function(
+    BuildContext context,
+    String title,
+    Widget content,
+    List<Widget>? buttons,
+  )? dialogBuilder;
 
   @override
   Widget build(BuildContext context) {
-    // Called when the user completes entering the passcode.
-    // It then prompts for confirmation by having the user re-enter the passcode.
-    // If confirmed, the passcode is converted to a SHA-256 hash and returned.
+    // Handles user completion of passcode input:
+    // 1. Passcode is hashed with the salt.
+    // 2. The result is returned to the calling navigator.
     void onCompleted(String code) async {
       final passcodeSHA256 = PasscodeBiometricAuth.sha256FromPasscode(
         code,
@@ -52,7 +62,8 @@ class CreatePasscode extends StatelessWidget {
       Navigator.pop(context, passcodeSHA256);
     }
 
-    // Widget containing the content of the passcode creation dialog.
+    // Main content of the create passcode dialog, including instructions,
+    // passcode entry, and optional subcontent.
     final widgetContent = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -61,13 +72,12 @@ class CreatePasscode extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Display the main instruction for creating the passcode.
+          // Primary instruction text
           Text(createConfig.content, style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
+          // Passcode input field
           Padding(
             padding: const EdgeInsets.all(8),
-            // Pinput widget for entering the passcode. Haptic feedback and secure text
-            // (obscured) are enabled.
             child: Pinput(
               length: 6,
               autofocus: true,
@@ -77,7 +87,7 @@ class CreatePasscode extends StatelessWidget {
               onCompleted: onCompleted,
             ),
           ),
-          // Optionally display additional instructions if provided.
+          // Displays additional instructions if provided
           if (createConfig.subcontent != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -91,20 +101,20 @@ class CreatePasscode extends StatelessWidget {
       ),
     );
 
-    // Define optional actions (buttons) for the dialog.
+    // Optional action buttons for the dialog
     final buttons = createConfig.buttonText == null
         ? null
         : [
             ElevatedButton(
               onPressed: () {
-                // Close the dialog without passing any passcode.
                 Navigator.pop(context);
               },
               child: Text(createConfig.buttonText!),
             ),
           ];
 
-    // Build the dialog using a custom dialog builder if provided, or default to an AlertDialog.
+    // Builds the dialog using a custom dialog builder if provided,
+    // otherwise defaults to AlertDialog.
     return dialogBuilder?.call(context, title, widgetContent, buttons) ??
         AlertDialog(
           title: Text(title),

@@ -1,7 +1,3 @@
-/// A stateless widget that requests passcode creation and confirmation, then
-/// returns the passcode hashed with SHA-256 and a provided salt.
-library;
-
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:passcode_biometric_auth/src/passcode_biometric_auth.dart';

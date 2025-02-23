@@ -169,13 +169,16 @@ class PasscodeBiometricAuthUI {
   /// for a new passcode.
   Future<bool> changePasscode(BuildContext context) async {
     final isPasscodeAvailable = await isAvailablePasscode();
-    if (!isPasscodeAvailable) {
-      if (!context.mounted) return false;
+
+    if (!context.mounted) return false;
+
+    if (isPasscodeAvailable) {
+      final isAuthenticated = await authenticateWithPasscode(context);
+
+      if (!isAuthenticated || !context.mounted) return false;
+
       return await _isPasscodeCreated(context);
     } else {
-      if (!context.mounted) return false;
-      final isAuthenticated = await authenticateWithPasscode(context);
-      if (!isAuthenticated || !context.mounted) return false;
       return await _isPasscodeCreated(context);
     }
   }
@@ -331,6 +334,6 @@ class PasscodeBiometricAuthUI {
   }
 
   String _createKey(String subKey) {
-    return '$prefix.$subKey';
+    return PrefKeys.createKey(prefix, subKey);
   }
 }

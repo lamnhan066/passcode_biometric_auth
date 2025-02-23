@@ -22,7 +22,7 @@ class PasscodeBiometricAuth {
     }
 
     final saltBytes = List<int>.generate(16, (_) => random.nextInt(256));
-    return base64Encode(saltBytes);
+    return String.fromCharCodes(saltBytes);
   }
 
   /// Computes a SHA256 hash for a combination of the passcode and a salt.

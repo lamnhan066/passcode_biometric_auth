@@ -6,10 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
 import 'package:passcode_biometric_auth/src/passcode_biometric_auth.dart';
-import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
-
-import 'repeat_passcode.dart';
 
 class CreatePasscode extends StatelessWidget {
   /// Constructs a CreatePasscode widget.
@@ -44,29 +41,15 @@ class CreatePasscode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Callback executed when the passcode input is completed.
-    // It prompts the user to repeat the passcode for confirmation.
-    // If the confirmation is successful, it hashes the passcode using SHA-256 and returns it.
+    // Called when the user completes entering the passcode.
+    // It then prompts for confirmation by having the user re-enter the passcode.
+    // If confirmed, the passcode is converted to a SHA-256 hash and returned.
     void onCompleted(String code) async {
-      final confirmed = await animatedDialog<bool>(
-        context: context,
-        blurSigma: 0,
-        builder: (_) => RepeatPasscode(
-          passcode: code,
-          title: title,
-          repeatConfig: repeatConfig,
-          hapticFeedbackType: hapticFeedbackType,
-          dialogBuilder: dialogBuilder,
-        ),
+      final passcodeSHA256 = PasscodeBiometricAuth.sha256FromPasscode(
+        code,
+        salt,
       );
-
-      // If passcode confirmation succeeded and the widget is still in the widget tree,
-      // calculate SHA-256 hash and close the current dialog passing the hash.
-      if (confirmed == true && context.mounted) {
-        final passcodeSHA256 =
-            PasscodeBiometricAuth.sha256FromPasscode(code, salt);
-        Navigator.pop(context, passcodeSHA256);
-      }
+      Navigator.pop(context, passcodeSHA256);
     }
 
     // Widget containing the content of the passcode creation dialog.

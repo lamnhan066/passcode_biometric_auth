@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
+import 'package:passcode_biometric_auth/passcode_biometric_auth.dart';
 import 'package:pinput/pinput.dart';
 
 /// A widget that repeats the entered passcode and verifies if it matches the original.
@@ -7,22 +7,30 @@ import 'package:pinput/pinput.dart';
 class RepeatPasscode extends StatefulWidget {
   const RepeatPasscode({
     super.key,
-    required this.passcode,
+    required this.sha256Passcode,
+    required this.salt,
     required this.title,
     required this.repeatConfig,
     required this.hapticFeedbackType,
     required this.dialogBuilder,
   });
 
-  // The initial passcode that the user needs to re-enter.
-  final String passcode;
-  // The title of the dialog or screen.
+  /// The initial passcode that the user needs to re-enter.
+  final String sha256Passcode;
+
+  /// A salt string used for additional security when hashing the passcode.
+  final String salt;
+
+  /// The title of the dialog or screen.
   final String title;
-  // Configuration for repeat passcode including error messages and related settings.
+
+  /// Configuration for repeat passcode including error messages and related settings.
   final RepeatConfig repeatConfig;
-  // The type of haptic feedback to provide.
+
+  /// The type of haptic feedback to provide.
   final HapticFeedbackType hapticFeedbackType;
-  // Optional builder for customizing the dialog UI.
+
+  /// Optional builder for customizing the dialog UI.
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? buttons)? dialogBuilder;
 
@@ -47,7 +55,11 @@ class _RepeatPasscodeState extends State<RepeatPasscode> {
   /// Callback when the user completes entering the passcode.
   /// It verifies if the entered passcode matches the original.
   void onCompleted(String code) {
-    if (code == widget.passcode) {
+    final sha256Passcode = PasscodeBiometricAuth.sha256FromPasscode(
+      code,
+      widget.salt,
+    );
+    if (sha256Passcode == widget.sha256Passcode) {
       // If passcode matches, unfocus the input and close dialog with success.
       focusNode.unfocus();
       Navigator.pop(context, true);

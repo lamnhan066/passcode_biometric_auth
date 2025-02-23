@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/passcode_biometric_auth.dart';
+import 'package:passcode_biometric_auth/src/components/repeat_passcode.dart';
 import 'package:passcode_biometric_auth/src/models/check_passcode_state.dart';
 import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
 import 'package:pinput/pinput.dart';
@@ -282,7 +283,7 @@ class PasscodeBiometricAuthUI {
   Future<bool> _isPasscodeCreated(BuildContext context) async {
     if (!context.mounted) return false;
 
-    final recievedCode = await animatedDialog(
+    final recievedSha256Code = await animatedDialog(
       context: context,
       blurSigma: blurSigma,
       builder: (_) => BackdropFilter(
@@ -298,15 +299,35 @@ class PasscodeBiometricAuthUI {
       ),
     );
 
-    if (recievedCode == null) return false;
+    if (recievedSha256Code == null || !context.mounted) return false;
 
-    _sha256Passcode = recievedCode;
-    await onWrite?.writeString(
-      _createKey(PrefKeys.sha256PasscodeKey),
-      recievedCode,
+    final confirmed = await animatedDialog<bool>(
+      context: context,
+      blurSigma: 0,
+      builder: (_) => RepeatPasscode(
+        sha256Passcode: recievedSha256Code,
+        salt: salt,
+        title: title,
+        repeatConfig: repeatConfig,
+        hapticFeedbackType: hapticFeedbackType,
+        dialogBuilder: dialogBuilder,
+      ),
     );
 
-    return true;
+    // Upon successful confirmation of the newly created passcode and if the widget is still active,
+    // update the local SHA-256 passcode, persist it using the onWrite callback,
+    // and then close the dialog by returning true.
+    if (confirmed == true) {
+      _sha256Passcode = recievedSha256Code;
+      await onWrite?.writeString(
+        _createKey(PrefKeys.sha256PasscodeKey),
+        recievedSha256Code,
+      );
+
+      return true;
+    }
+
+    return false;
   }
 
   String _createKey(String subKey) {

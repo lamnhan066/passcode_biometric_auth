@@ -17,6 +17,10 @@ import '../utils/pref_keys.dart';
 /// A StatefulWidget that displays a passcode check UI with optional biometric
 /// authentication support.
 class CheckPasscode extends StatefulWidget {
+  /// A widget that checks the passcode entered by the user.
+  ///
+  /// This widget is used to verify the passcode input and can be customized
+  /// to handle different passcode validation scenarios.
   const CheckPasscode({
     super.key,
     required this.localAuth,

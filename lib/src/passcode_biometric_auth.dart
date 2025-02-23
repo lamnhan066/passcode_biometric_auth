@@ -6,13 +6,13 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 
-/// Handles both passcode and biometric authentication.
+/// Manages passcode and biometric authentication operations.
 class PasscodeBiometricAuth {
-  /// Generates a secure random salt encoded in Base64 URL format.
+  /// Generates a secure random salt.
   ///
-  /// Uses a cryptographically secure random number generator when available,
-  /// otherwise falls back to a less secure generator.
-  /// Returns a 16-byte salt as a Base64 URL-safe string.
+  /// The salt is generated using a cryptographically secure random number generator,
+  /// if available; otherwise, a fallback generator is used. The result is a 16-byte
+  /// salt encoded in Base64 URL-safe format.
   static String generateSalt() {
     Random random;
     try {
@@ -25,52 +25,50 @@ class PasscodeBiometricAuth {
     return base64Encode(saltBytes);
   }
 
-  /// Combines a passcode and salt, hashes them with SHA256, and encodes in Base64 URL format.
+  /// Computes a SHA256 hash for a combination of the passcode and a salt.
   ///
-  /// Using a salt defends against attacks by ensuring the hash is unique even for common passcodes.
-  /// Parameters:
-  /// - [code]: The user-provided passcode.
-  /// - [salt]: A string used to augment security.
-  /// Returns a new instance with the hashed passcode and salt.
-  static String sha256FromPasscode(String code, String salt) {
-    final combined = code + salt;
+  /// The passcode ([passcode]) is concatenated with the provided [salt] and then hashed
+  /// using the SHA256 algorithm. The resulting hash is encoded as a Base64 URL-safe string.
+  static String sha256FromPasscode(String passcode, String salt) {
+    final combined = passcode + salt;
     final bytes = utf8.encode(combined);
     final hash = sha256.convert(bytes);
 
     return base64Encode(hash.bytes);
   }
 
-  /// Returns the stored SHA256 hashed passcode (in Base64 encoding).
-  String get sha256Passcode => _sha256Passcode;
+  /// The SHA256-hashed passcode, stored as a Base64-encoded string.
+  final String sha256Passcode;
 
-  /// The SHA256 hashed passcode as a Base64 encoded string.
-  final String _sha256Passcode;
-
-  /// The salt used to enhance the passcode security. (Defaults to an empty string.)
+  /// The salt used to enhance the passcode security.
+  ///
+  /// When not provided, defaults to an empty string.
   final String salt;
 
-  /// Creates an instance with a given SHA256 hashed passcode and salt.
+  /// Creates a PasscodeBiometricAuth instance with the hashed passcode and salt.
   const PasscodeBiometricAuth({
-    required String sha256Passcode,
+    required this.sha256Passcode,
     this.salt = '',
-  }) : _sha256Passcode = sha256Passcode;
+  });
 
-  /// Returns a modified copy of this instance.
+  /// Returns a new instance with updated values.
   ///
-  /// Updated fields if provided, otherwise retains previous values.
+  /// If a new [sha256Passcode] or [salt] is provided, they replace the current values;
+  /// otherwise, the existing values are retained.
   PasscodeBiometricAuth copyWith({
     String? sha256Passcode,
     String? salt,
   }) {
     return PasscodeBiometricAuth(
-      sha256Passcode: sha256Passcode ?? _sha256Passcode,
+      sha256Passcode: sha256Passcode ?? this.sha256Passcode,
       salt: salt ?? this.salt,
     );
   }
 
-  /// Checks if biometric authentication is available on the device.
+  /// Determines whether biometric authentication is available.
   ///
-  /// On web platforms or unsupported devices, it returns false.
+  /// On web platforms or devices that do not support biometric checks, returns false.
+  /// Checks both if the device is supported and if biometric features can be used.
   Future<bool> isBiometricAvailable() async {
     if (kIsWeb) {
       return false;
@@ -89,10 +87,10 @@ class PasscodeBiometricAuth {
     }
   }
 
-  /// Authenticates the user using biometrics.
+  /// Prompts biometric authentication.
   ///
-  /// [biometricReason] is the prompt message for the biometric request.
-  /// Returns true if authentication is successful, false otherwise.
+  /// Uses the provided [biometricReason] as the prompt message. If biometric
+  /// authentication is not available or fails, returns false.
   Future<bool> isBiometricAuthenticated({
     String biometricReason = 'Please authenticate to use this feature',
   }) async {
@@ -109,21 +107,20 @@ class PasscodeBiometricAuth {
     }
   }
 
-  /// Verifies if the provided passcode matches the stored hash.
+  /// Validates the provided passcode.
   ///
-  /// Combines [code] with the stored salt, hashes them,
-  /// and compares the result with the stored hash.
-  /// Returns true if they match.
+  /// Recomputes the SHA256 hash (with the stored salt) of the given [code] and compares
+  /// it to the stored hashed passcode. Returns true if they match, otherwise false.
   bool isPasscodeAuthenticated(String code) {
-    final sha256 = sha256FromPasscode(code, salt);
-    return sha256 == sha256Passcode;
+    final computedHash = sha256FromPasscode(code, salt);
+    return computedHash == sha256Passcode;
   }
 
-  /// Checks if a passcode is set.
+  /// Checks whether a passcode has been set.
   ///
-  /// Returns true if the stored passcode hash is not empty.
+  /// Returns true if the stored hashed passcode is not empty.
   bool isAvailablePasscode() {
-    return _sha256Passcode.isNotEmpty;
+    return sha256Passcode.isNotEmpty;
   }
 
   @override
@@ -131,10 +128,10 @@ class PasscodeBiometricAuth {
     if (identical(this, other)) return true;
 
     return other is PasscodeBiometricAuth &&
-        other._sha256Passcode == _sha256Passcode &&
+        other.sha256Passcode == sha256Passcode &&
         other.salt == salt;
   }
 
   @override
-  int get hashCode => Object.hash(_sha256Passcode, salt);
+  int get hashCode => Object.hash(sha256Passcode, salt);
 }

@@ -31,25 +31,34 @@ class CheckPasscode extends StatefulWidget {
     required this.dialogBuilder,
   });
 
-  // Instance of PasscodeBiometricAuthUI for managing authentication.
+  /// Instance of PasscodeBiometricAuthUI for managing authentication.
   final PasscodeBiometricAuthUI localAuth;
-  // The passcode stored in sha256 format.
+
+  /// The passcode stored in sha256 format.
   final String? sha256Passcode;
-  // Title to be shown in UI.
+
+  /// Title to be shown in UI.
   final String title;
-  // Configuration settings for the passcode checking process.
+
+  /// Configuration settings for the passcode checking process.
   final CheckConfig checkConfig;
-  // Callback when the user taps on the "forget passcode" action.
+
+  /// Callback when the user taps on the "forget passcode" action.
   final Future<void> Function()? onForgetPasscode;
-  // Callback when maximum retries are exceeded.
+
+  /// Callback when maximum retries are exceeded.
   final void Function()? onMaxRetriesExceeded;
-  // Callback for reading data (e.g., retries remaining).
+
+  /// Callback for reading data (e.g., retries remaining).
   final OnRead? onRead;
-  // Callback for writing data (e.g., updating retry counter).
+
+  /// Callback for writing data (e.g., updating retry counter).
   final OnWrite? onWrite;
-  // Haptic feedback type to use.
+
+  /// Haptic feedback type to use.
   final HapticFeedbackType hapticFeedbackType;
-  // Custom dialog builder for customizing the UI.
+
+  /// Custom dialog builder for customizing the UI.
   final Widget Function(BuildContext context, String title, Widget content,
       List<Widget>? actions)? dialogBuilder;
 
@@ -131,14 +140,24 @@ class _CheckPasscodeState extends State<CheckPasscode> {
         Future.delayed(const Duration(milliseconds: 500)).then((value) {
           if (mounted) FocusScope.of(context).requestFocus(focusNode);
         });
-        widget.onWrite
-            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, 0);
+        widget.onWrite?.writeInt(
+          PrefKeys.createKey(
+            widget.localAuth.prefix,
+            PrefKeys.lastRetriesExceededRemainingSecond,
+          ),
+          0,
+        );
         return;
       }
       // Update persistent storage every one second.
       if (second % 1000 == 0) {
-        widget.onWrite
-            ?.writeInt(PrefKeys.lastRetriesExceededRemainingSecond, second);
+        widget.onWrite?.writeInt(
+          PrefKeys.createKey(
+            widget.localAuth.prefix,
+            PrefKeys.lastRetriesExceededRemainingSecond,
+          ),
+          second,
+        );
       }
       setState(() {
         error = widget.checkConfig.maxRetriesExceededText
@@ -151,8 +170,12 @@ class _CheckPasscodeState extends State<CheckPasscode> {
   /// If there's a cooldown value stored (e.g., from a previous session),
   /// it starts the cooldown timer; otherwise, set focus to input.
   void init() async {
-    final second = await widget.onRead
-        ?.readInt(PrefKeys.lastRetriesExceededRemainingSecond);
+    final second = await widget.onRead?.readInt(
+      PrefKeys.createKey(
+        widget.localAuth.prefix,
+        PrefKeys.lastRetriesExceededRemainingSecond,
+      ),
+    );
     if (second != null && second > 0) {
       maxRetriesExceededCounter(second);
     } else {

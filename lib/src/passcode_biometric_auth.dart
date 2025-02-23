@@ -131,9 +131,10 @@ class PasscodeBiometricAuth {
     if (identical(this, other)) return true;
 
     return other is PasscodeBiometricAuth &&
-        other._sha256Passcode == _sha256Passcode;
+        other._sha256Passcode == _sha256Passcode &&
+        other.salt == salt;
   }
 
   @override
-  int get hashCode => _sha256Passcode.hashCode;
+  int get hashCode => Object.hash(_sha256Passcode, salt);
 }

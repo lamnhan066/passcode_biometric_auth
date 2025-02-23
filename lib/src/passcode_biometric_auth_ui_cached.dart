@@ -12,10 +12,13 @@ import 'passcode_biometric_auth_ui.dart';
 /// scenarios requiring more secure storage, consider using [PasscodeBiometricAuthUI]
 /// without caching.
 class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
-  /// Creates a [PasscodeBiometricAuthUICached] instance.
+  /// A variant of [PasscodeBiometricAuthUI] that automatically caches configuration
+  /// values using SharedPreferences.
   ///
-  /// The [prefix] parameter is used to namespace all stored keys.
-  /// Other parameters customize the UI behavior and passcode configuration.
+  /// This implementation provides default [onRead] and [onWrite] methods that persist
+  /// configuration data (booleans, strings, and integers) using SharedPreferences. For
+  /// scenarios requiring more secure storage, consider using [PasscodeBiometricAuthUI]
+  /// without caching.
   PasscodeBiometricAuthUICached({
     super.prefix,
     super.salt,

@@ -49,14 +49,8 @@ class PasscodeBiometricAuth {
   /// The salt used to enhance the passcode security. (Defaults to an empty string.)
   final String salt;
 
-  /// Caches the result of the biometric availability check.
-  bool? _isBiometricAvailableCached;
-
-  /// Instance for handling local biometric authentication.
-  final LocalAuthentication _localAuth = LocalAuthentication();
-
   /// Creates an instance with a given SHA256 hashed passcode and salt.
-  PasscodeBiometricAuth({
+  const PasscodeBiometricAuth({
     required String sha256Passcode,
     this.salt = '',
   }) : _sha256Passcode = sha256Passcode;
@@ -67,42 +61,30 @@ class PasscodeBiometricAuth {
   PasscodeBiometricAuth copyWith({
     String? sha256Passcode,
     String? salt,
-    bool? isBiometricAvailableCached,
   }) {
-    var copy = PasscodeBiometricAuth(
+    return PasscodeBiometricAuth(
       sha256Passcode: sha256Passcode ?? _sha256Passcode,
       salt: salt ?? this.salt,
     );
-    copy._isBiometricAvailableCached =
-        isBiometricAvailableCached ?? _isBiometricAvailableCached;
-    return copy;
   }
 
   /// Checks if biometric authentication is available on the device.
   ///
   /// On web platforms or unsupported devices, it returns false.
-  /// Caches the result to avoid redundant checks.
   Future<bool> isBiometricAvailable() async {
-    if (_isBiometricAvailableCached != null) {
-      return _isBiometricAvailableCached!;
-    }
-
     if (kIsWeb) {
-      _isBiometricAvailableCached = false;
       return false;
     }
 
     try {
-      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      final auth = LocalAuthentication();
+      final isDeviceSupported = await auth.isDeviceSupported();
       if (!isDeviceSupported) {
-        _isBiometricAvailableCached = false;
         return false;
       }
-      _isBiometricAvailableCached = await _localAuth.canCheckBiometrics;
-      return _isBiometricAvailableCached!;
+      return await auth.canCheckBiometrics;
     } catch (e) {
       debugPrint('Biometric availability check failed: $e');
-      _isBiometricAvailableCached = false;
       return false;
     }
   }
@@ -119,7 +101,8 @@ class PasscodeBiometricAuth {
     }
 
     try {
-      return await _localAuth.authenticate(localizedReason: biometricReason);
+      final auth = LocalAuthentication();
+      return await auth.authenticate(localizedReason: biometricReason);
     } catch (e) {
       debugPrint('Biometric authentication failed: $e');
       return false;

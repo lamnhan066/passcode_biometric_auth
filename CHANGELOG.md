@@ -1,11 +1,11 @@
 ## 0.1.0-rc
 
-**BREAKING CHANGE:**  
+* **BREAKING CHANGE:**  
 The behavior of `onRead` and `onWrite` in `PasscodeBiometricAuthUI` has been updated. The `key` now correctly incorporates the `prefix`. If you need to maintain the previous behavior, remove the `prefix` from your key as follows:
 
-```dart
-final oldKey = newKey.substring(prefix.length + 1);
-```
+    ```dart
+    final oldKey = newKey.substring(prefix.length + 1);
+    ```
 
 * Introduced a new `salt` parameter for enhanced security.
 * Added `PasscodeBiometricAuth.generateSalt()` to generate unique salt values.

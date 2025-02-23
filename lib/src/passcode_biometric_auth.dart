@@ -109,10 +109,10 @@ class PasscodeBiometricAuth {
 
   /// Validates the provided passcode.
   ///
-  /// Recomputes the SHA256 hash (with the stored salt) of the given [code] and compares
+  /// Recomputes the SHA256 hash (with the stored salt) of the given [passcode] and compares
   /// it to the stored hashed passcode. Returns true if they match, otherwise false.
-  bool isPasscodeAuthenticated(String code) {
-    final computedHash = sha256FromPasscode(code, salt);
+  bool isPasscodeAuthenticated(String passcode) {
+    final computedHash = sha256FromPasscode(passcode, salt);
     return computedHash == sha256Passcode;
   }
 

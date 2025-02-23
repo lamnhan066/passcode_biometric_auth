@@ -55,7 +55,7 @@ class CheckConfig extends DialogConfig {
     this.useBiometricCheckboxText = 'Use biometric authentication',
     this.maxRetriesExceededText =
         'Maximum retries exceeded.\nTry again in @{second}s.',
-    this.biometricReason = 'Please authenticate to use this feature',
+    this.biometricReason = 'Please authenticate to proceed',
     super.buttonText,
   });
 }

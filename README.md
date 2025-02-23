@@ -6,6 +6,10 @@ A Flutter package that combines both passcode and biometric authentications effe
 
 [https://pub.lamnhan.dev/passcode-biometric-auth/](https://pub.lamnhan.dev/passcode-biometric-auth/)
 
+## Installation
+
+To use this package, you need to set up the `local_auth` package. Follow the instructions provided in the [local_auth](https://pub.dev/packages/local_auth#ios-integration) documentation.
+
 ## Usage
 
 ```dart
@@ -25,20 +29,20 @@ class _AppState extends State<App> {
       retryInSecond: 30,
       content: 'Input Passcode',
       incorrectText:
-          'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-          'You have to wait for @{retryInSecond}s to try again when the max number of retries is exceeded',
+        'This passcode is incorrect (max: @{counter}/@{maxRetries} times).\n'
+            'Please wait for @{retryInSecond}s before trying again after reaching the maximum retries.',
       forgotButtonText: 'Forgot your passcode?',
       useBiometricCheckboxText: 'Use biometric authentication',
       maxRetriesExceededText:
-          'Maximum number of retries is exceeded\nPlease try again in @{second}s',
-      biometricReason: 'Please authenticate to use this feature',
+          'Maximum retries exceeded.\nTry again in @{second}s.',
+      biometricReason: 'Please authenticate to proceed',
     ),
     createConfig: const CreateConfig(
       content: 'Create Passcode',
       subcontent: 'Please remember your passcode. '
-          'When you forget your passcode, you can reset it but '
-          'all your cards will be removed from your local storage '
-          'and your Google account will be signed out.',
+          'If you forget it, you can reset it, but '
+          'all your cards will be removed from local storage '
+          'and you will be signed out of your Google account.',
     ),
     onForgotPasscode: (context, authUI) async {
       if (await _forgotPasscode(context)) {
@@ -54,9 +58,9 @@ class _AppState extends State<App> {
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            title: const Text('Forget Passcode'),
+            title: const Text('Forgot Passcode'),
             content: const Text(
-              'All of your local data will be removed when reset the passcode. Would you like to continue?',
+              'Resetting the passcode will remove all your local data. Do you want to proceed?',
               textAlign: TextAlign.justify,
             ),
             actions: [

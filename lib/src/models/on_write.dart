@@ -3,13 +3,13 @@
 /// This class defines the callbacks used to persist configuration and settings
 /// by writing boolean, string, and integer values associated with a unique key.
 class OnWrite {
-  /// Asynchronously writes a boolean [value] with the associated [key].
+  /// Asynchronously writes a boolean `value` with the associated `key`.
   final Future<void> Function(String key, bool value) writeBool;
 
-  /// Asynchronously writes a string [value] with the associated [key].
+  /// Asynchronously writes a string `value` with the associated `key`.
   final Future<void> Function(String key, String value) writeString;
 
-  /// Asynchronously writes an integer [value] with the associated [key].
+  /// Asynchronously writes an integer `value` with the associated `key`.
   final Future<void> Function(String key, int value) writeInt;
 
   /// Creates an instance of [OnWrite] with required callbacks for writing data.

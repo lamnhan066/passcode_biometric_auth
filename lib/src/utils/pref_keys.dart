@@ -10,4 +10,9 @@ class PrefKeys {
 
   /// Key for saving the hashed version (SHA256) of the user's passcode.
   static const sha256PasscodeKey = 'Sha256Passcode';
+
+  /// Creates a combined key using a prefix and a sub key, separated by a dot.
+  static createKey(String prefix, String subKey) {
+    return '$prefix.$subKey';
+  }
 }

@@ -152,8 +152,7 @@ class PasscodeBiometricAuthUI {
     // Prompt user to create a new passcode if none exists.
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
-      final code = await _createPasscode(context);
-      return code;
+      return await _isPasscodeCreated(context);
     } else {
       // Fallback to passcode authentication.
       if (!context.mounted) return false;
@@ -171,13 +170,12 @@ class PasscodeBiometricAuthUI {
     final isPasscodeAvailable = await isAvailablePasscode();
     if (!isPasscodeAvailable) {
       if (!context.mounted) return false;
-      final code = await _createPasscode(context);
-      return code;
+      return await _isPasscodeCreated(context);
     } else {
       if (!context.mounted) return false;
       final isAuthenticated = await authenticateWithPasscode(context);
       if (!isAuthenticated || !context.mounted) return false;
-      return (await _createPasscode(context));
+      return await _isPasscodeCreated(context);
     }
   }
 
@@ -281,7 +279,7 @@ class PasscodeBiometricAuthUI {
   /// Displays a blurred background and the passcode creation dialog. After the user
   /// successfully creates a passcode, it stores the passcode's SHA256 hash.
   /// Returns the SHA256 hash of the created passcode, or an empty string on failure.
-  Future<bool> _createPasscode(BuildContext context) async {
+  Future<bool> _isPasscodeCreated(BuildContext context) async {
     if (!context.mounted) return false;
 
     final recievedCode = await animatedDialog(

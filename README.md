@@ -24,6 +24,7 @@ class _AppState extends State<App> {
   final auth = PasscodeBiometricAuthUICached(
     forceCreatePasscode: true,
     title: 'Passcode',
+    salt: 'This is a salt value',
     checkConfig: const CheckConfig(
       maxRetries: 5,
       retryInSecond: 30,

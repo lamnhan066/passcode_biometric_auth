@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/passcode_biometric_auth.dart';
 
-void main(List<String> args) {
-  runApp(const MaterialApp(home: App()));
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: App(),
+    );
+  }
 }
 
 class App extends StatefulWidget {
@@ -14,64 +25,80 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   final authUI = PasscodeBiometricAuthUICached(
+    salt: 'This is a salt value',
     forceCreatePasscode: true,
     title: 'Passcode',
     checkConfig: const CheckConfig(
       maxRetries: 5,
       retryInSecond: 30,
-      content: 'Input Passcode',
+      content: 'Enter Passcode',
       incorrectText:
-          'This passcode is incorrect (max: @{counter}/@{maxRetries} times)\n'
-          'You have to wait for @{retryInSecond}s to try again when the max number of retries is exceeded',
+          'Incorrect passcode (attempt: @{counter} of @{maxRetries}).\n'
+          'You must wait @{retryInSecond} seconds before trying again once the maximum number of retries has been exceeded.',
       forgotButtonText: 'Forgot your passcode?',
       useBiometricCheckboxText: 'Use biometric authentication',
       maxRetriesExceededText:
-          'Maximum number of retries is exceeded\nPlease try again in @{second}s',
-      biometricReason: 'Please authenticate to use this feature',
+          'Maximum number of retries exceeded.\nPlease try again in @{second} seconds.',
+      biometricReason: 'Please authenticate to access this feature',
     ),
     createConfig: const CreateConfig(
       content: 'Create Passcode',
-      subcontent: 'Please remember your passcode. '
-          'When you forget your passcode, you can reset it but '
-          'all your cards will be removed from your local storage '
-          'and your Google account will be signed out.',
+      subcontent:
+          'Please remember your passcode. If you forget it, you can reset it, but doing so will remove all your local data and sign you out of your Google account.',
     ),
-    onForgotPasscode: (context, authUI) async {
-      if (await _forgotPasscode(context)) {
-        return true;
-      }
-      return false;
-    },
+    onForgotPasscode: _handleForgotPasscode,
   );
 
-  static Future<bool> _forgotPasscode(BuildContext context) async {
-    final result = await showDialog<bool>(
-        context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Forget Passcode'),
-            content: const Text(
-              'All of your local data will be removed when reset the passcode. Would you like to continue?',
-              textAlign: TextAlign.justify,
-            ),
-            actions: [
-              OutlinedButton(
-                child: const Text('No'),
-                onPressed: () {
-                  Navigator.pop(ctx, false);
-                },
-              ),
-              ElevatedButton(
-                child: const Text('Yes'),
-                onPressed: () {
-                  Navigator.pop(ctx, true);
-                },
-              ),
-            ],
-          );
-        });
+  static Future<bool> _handleForgotPasscode(
+      BuildContext context, PasscodeBiometricAuthUI authUI) async {
+    return await _showResetPasscodeDialog(context);
+  }
 
-    return result == true;
+  static Future<bool> _showResetPasscodeDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset Passcode'),
+        content: const Text(
+          'Resetting your passcode will remove all of your local data. '
+          'Would you like to continue?',
+          textAlign: TextAlign.justify,
+        ),
+        actions: [
+          OutlinedButton(
+            child: const Text('No'),
+            onPressed: () => Navigator.pop(ctx, false),
+          ),
+          ElevatedButton(
+            child: const Text('Yes'),
+            onPressed: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  void _authenticate() {
+    authUI.authenticate(context).catchError((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Authentication error: $error')),
+        );
+      }
+      return false;
+    });
+  }
+
+  void _changePasscode() {
+    authUI.changePasscode(context).catchError((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Change passcode error: $error')),
+        );
+      }
+      return false;
+    });
   }
 
   @override
@@ -85,16 +112,12 @@ class _AppState extends State<App> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
-              onPressed: () {
-                authUI.authenticate(context);
-              },
+              onPressed: _authenticate,
               child: const Text('Authenticate'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                authUI.changePasscode(context);
-              },
+              onPressed: _changePasscode,
               child: const Text('Change Passcode'),
             ),
           ],

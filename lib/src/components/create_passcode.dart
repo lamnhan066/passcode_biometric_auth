@@ -1,16 +1,20 @@
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:passcode_biometric_auth/src/models/dialog_configs.dart';
-import 'package:passcode_biometric_auth/src/utils/animated_dialog.dart';
+import 'package:passcode_biometric_auth/src/passcode_biometric_auth.dart';
 import 'package:pinput/pinput.dart';
 
-import 'repeat_passcode.dart';
-
 class CreatePasscode extends StatelessWidget {
+  /// Constructs a widget to create and confirm a passcode.
+  ///
+  /// The [salt] is used when hashing the passcode.
+  /// [title] is displayed at the top of the dialog.
+  /// [createConfig] manages text/content for passcode creation.
+  /// [repeatConfig] manages content for the confirmation dialog.
+  /// [hapticFeedbackType] configures vibration feedback on passcode input.
+  /// If [dialogBuilder] is provided, it replaces the default dialog UI.
   const CreatePasscode({
     super.key,
+    required this.salt,
     required this.title,
     required this.createConfig,
     required this.repeatConfig,
@@ -18,35 +22,44 @@ class CreatePasscode extends StatelessWidget {
     required this.dialogBuilder,
   });
 
+  /// Salt appended to the passcode before hashing.
+  final String salt;
+
+  /// Dialog title displayed during passcode creation.
   final String title;
+
+  /// Configuration for the passcode creation dialog text.
   final CreateConfig createConfig;
+
+  /// Configuration for the dialog used when repeating the passcode.
   final RepeatConfig repeatConfig;
+
+  /// Sets the type of haptic feedback for the passcode input.
   final HapticFeedbackType hapticFeedbackType;
-  final Widget Function(BuildContext context, String title, Widget content,
-      List<Widget>? buttons)? dialogBuilder;
+
+  /// Overrides the default dialog design if provided.
+  final Widget Function(
+    BuildContext context,
+    String title,
+    Widget content,
+    List<Widget>? buttons,
+  )? dialogBuilder;
 
   @override
   Widget build(BuildContext context) {
-    void onCompleted(code) async {
-      final c = await animatedDialog<bool>(
-        context: context,
-        blurSigma: 0,
-        builder: (_) => RepeatPasscode(
-          passcode: code,
-          title: title,
-          repeatConfig: repeatConfig,
-          hapticFeedbackType: hapticFeedbackType,
-          dialogBuilder: dialogBuilder,
-        ),
+    // Handles user completion of passcode input:
+    // 1. Passcode is hashed with the salt.
+    // 2. The result is returned to the calling navigator.
+    void onCompleted(String code) async {
+      final passcodeSHA256 = PasscodeBiometricAuth.sha256FromPasscode(
+        code,
+        salt,
       );
-
-      if (c == true && context.mounted) {
-        final passcodeSHA256 =
-            base64Encode(sha256.convert(utf8.encode(code)).bytes);
-        Navigator.pop(context, passcodeSHA256);
-      }
+      Navigator.pop(context, passcodeSHA256);
     }
 
+    // Main content of the create passcode dialog, including instructions,
+    // passcode entry, and optional subcontent.
     final widgetContent = AnimatedSize(
       alignment: Alignment.topCenter,
       duration: const Duration(milliseconds: 100),
@@ -55,8 +68,10 @@ class CreatePasscode extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Primary instruction text
           Text(createConfig.content, style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
+          // Passcode input field
           Padding(
             padding: const EdgeInsets.all(8),
             child: Pinput(
@@ -68,6 +83,7 @@ class CreatePasscode extends StatelessWidget {
               onCompleted: onCompleted,
             ),
           ),
+          // Displays additional instructions if provided
           if (createConfig.subcontent != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -81,6 +97,7 @@ class CreatePasscode extends StatelessWidget {
       ),
     );
 
+    // Optional action buttons for the dialog
     final buttons = createConfig.buttonText == null
         ? null
         : [
@@ -92,17 +109,13 @@ class CreatePasscode extends StatelessWidget {
             ),
           ];
 
-    Widget child;
-    if (dialogBuilder != null) {
-      child = dialogBuilder!(context, title, widgetContent, buttons);
-    } else {
-      child = AlertDialog(
-        title: Text(title),
-        content: widgetContent,
-        actions: buttons,
-      );
-    }
-
-    return child;
+    // Builds the dialog using a custom dialog builder if provided,
+    // otherwise defaults to AlertDialog.
+    return dialogBuilder?.call(context, title, widgetContent, buttons) ??
+        AlertDialog(
+          title: Text(title),
+          content: widgetContent,
+          actions: buttons,
+        );
   }
 }

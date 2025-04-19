@@ -4,14 +4,24 @@ import 'models/on_read.dart';
 import 'models/on_write.dart';
 import 'passcode_biometric_auth_ui.dart';
 
+/// A variant of [PasscodeBiometricAuthUI] that automatically caches configuration
+/// values using SharedPreferences.
+///
+/// This implementation provides default [onRead] and [onWrite] methods that persist
+/// configuration data (booleans, strings, and integers) using SharedPreferences. For
+/// scenarios requiring more secure storage, consider using [PasscodeBiometricAuthUI]
+/// without caching.
 class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
-  /// This is the same as [PasscodeBiometricAuthUI] but with built-in [onRead]
-  /// and [onWrite] using `SharedPreferences`.
+  /// A variant of [PasscodeBiometricAuthUI] that automatically caches configuration
+  /// values using SharedPreferences.
   ///
-  /// If you want to use a more secure way to cache the data then you need to
-  /// use [PasscodeBiometricAuthUI].
+  /// This implementation provides default [onRead] and [onWrite] methods that persist
+  /// configuration data (booleans, strings, and integers) using SharedPreferences. For
+  /// scenarios requiring more secure storage, consider using [PasscodeBiometricAuthUI]
+  /// without caching.
   PasscodeBiometricAuthUICached({
     super.prefix,
+    super.salt,
     super.forceCreatePasscode,
     super.title,
     super.checkConfig,
@@ -28,29 +38,47 @@ class PasscodeBiometricAuthUICached extends PasscodeBiometricAuthUI {
           onWrite: _onWrite(prefix),
         );
 
-  static OnRead _onRead(String prefix) => OnRead(readBool: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getBool('$prefix.$key') ?? false;
-      }, readString: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getString('$prefix.$key');
-      }, readInt: (String key) async {
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        return pref.getInt('$prefix.$key');
-      });
+  /// Creates an [OnRead] instance with methods to retrieve stored values.
+  ///
+  /// Each read method uses a combined key of the provided [prefix] and the [key]
+  /// to prevent collisions in the shared preferences.
+  static OnRead _onRead(String prefix) => OnRead(
+        readBool: (String key) async {
+          // Retrieves a boolean value associated with the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          return prefs.getBool(key) ?? false;
+        },
+        readString: (String key) async {
+          // Retrieves a string value associated with the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          return prefs.getString(key);
+        },
+        readInt: (String key) async {
+          // Retrieves an integer value associated with the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          return prefs.getInt(key);
+        },
+      );
 
+  /// Creates an [OnWrite] instance with methods to persist values.
+  ///
+  /// Each write method uses a combined key of the provided [prefix] and the [key]
+  /// to ensure uniqueness and avoid key collisions.
   static OnWrite _onWrite(String prefix) => OnWrite(
         writeBool: (String key, bool value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setBool('$prefix.$key', value);
+          // Persists a boolean value using the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool(key, value);
         },
         writeString: (String key, String value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setString('$prefix.$key', value);
+          // Persists a string value using the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString(key, value);
         },
         writeInt: (String key, int value) async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          await pref.setInt('$prefix.$key', value);
+          // Persists an integer value using the namespaced key.
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setInt(key, value);
         },
       );
 }

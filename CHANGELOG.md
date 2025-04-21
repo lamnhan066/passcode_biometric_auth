@@ -1,3 +1,7 @@
+## 0.1.1
+
+* fix: Update biometric authentication method to use isBiometricAuthenticated
+
 ## 0.1.0
 
 * Release to stable.

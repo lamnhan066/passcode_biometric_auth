@@ -197,7 +197,8 @@ class PasscodeBiometricAuthUI {
   ///
   /// Returns true if the biometric check is successful.
   Future<bool> authenticateWithBiometric() async {
-    return (await _auth).isPasscodeAuthenticated(checkConfig.biometricReason);
+    return (await _auth)
+        .isBiometricAuthenticated(biometricReason: checkConfig.biometricReason);
   }
 
   /// Displays the passcode input dialog for authentication.
